@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../widgets/app_scaffold.dart';
 import '../../features/mana_calculator/presentation/screens/mana_calculator_screen.dart';
+import '../../features/life_counter/screens/life_counter_screen.dart';
 import 'route_names.dart';
 
 class AppRouter {
@@ -31,7 +32,7 @@ class AppRouter {
           GoRoute(
             path: '/${RouteNames.lifeCounter}',
             name: RouteNames.lifeCounter,
-            builder: (context, state) => const _ComingSoonScreen(title: 'Life Counter'),
+            builder: (context, state) => const LifeCounterScreen(),
           ),
         ],
       ),
