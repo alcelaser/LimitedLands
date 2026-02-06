@@ -1,9 +1,9 @@
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../widgets/app_scaffold.dart';
 import '../../features/mana_calculator/presentation/screens/mana_calculator_screen.dart';
 import '../../features/life_counter/screens/life_counter_screen.dart';
 import '../../features/deck_builder/screens/deck_list_screen.dart';
+import '../../features/match_tracker/screens/match_tracker_screen.dart';
 import 'route_names.dart';
 
 class AppRouter {
@@ -23,8 +23,7 @@ class AppRouter {
           GoRoute(
             path: '/${RouteNames.matchTracker}',
             name: RouteNames.matchTracker,
-            builder: (context, state) =>
-                const _ComingSoonScreen(title: 'Match Tracker'),
+            builder: (context, state) => const MatchTrackerScreen(),
           ),
           GoRoute(
             path: '/${RouteNames.deckBuilder}',
@@ -40,38 +39,4 @@ class AppRouter {
       ),
     ],
   );
-}
-
-class _ComingSoonScreen extends StatelessWidget {
-  final String title;
-
-  const _ComingSoonScreen({required this.title});
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.construction,
-            size: 64,
-            color: Theme.of(context).colorScheme.primary.withOpacity(0.5),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            title,
-            style: Theme.of(context).textTheme.headlineMedium,
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Coming Soon',
-            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  color: Colors.white54,
-                ),
-          ),
-        ],
-      ),
-    );
-  }
 }

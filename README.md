@@ -4,7 +4,7 @@
 [![Flutter](https://img.shields.io/badge/Flutter-3.16+-02569B?style=flat-square&logo=flutter)](https://flutter.dev)
 [![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE)
 
-A Magic: The Gathering companion app built with Flutter. Mana calculator, Vintage Cube support, deck builder, and life counter -- everything you need at the table.
+A Magic: The Gathering companion app built with Flutter. Mana calculator, Vintage Cube support, deck builder, match tracker, and life counter -- everything you need at the table.
 
 > **[Download the latest APK](https://github.com/alcelaser/LimitedLands/releases/latest)**
 
@@ -29,6 +29,18 @@ Build and manage your deck lists with mainboard and sideboard tracking.
 - Card count progress indicator (e.g. 23/40)
 - Export deck list as text to clipboard
 - Rename and delete decks
+- **Persistent storage** - Decks saved locally across app restarts
+
+### Match Tracker
+Record wins and losses across a draft, sealed, or constructed event.
+
+- Create events with format tracking (Limited, Sealed, Vintage Cube, Constructed)
+- Add rounds with opponent names and game-by-game results
+- Quick-tap buttons for recording game wins/losses
+- Draw support and match reset
+- Color-coded W-L-D record badges
+- Overall event record summary (e.g. 2-1)
+- **Persistent storage** - Events saved locally across app restarts
 
 ### Life Counter
 Clean, modern 2-player life counter designed for face-to-face play.
@@ -37,9 +49,6 @@ Clean, modern 2-player life counter designed for face-to-face play.
 - Tap to adjust by 1, long press for +/-5
 - Visual warnings at low life totals
 - Quick reset between games
-
-### Roadmap
-- **Match Tracker** - Record wins/losses across a draft or sealed event
 
 ---
 
@@ -61,6 +70,9 @@ lib/
     deck_builder/
       providers/    # Deck CRUD state management
       screens/      # Deck list + detail screens
+    match_tracker/
+      providers/    # Event/match state management
+      screens/      # Event list + match recording
     life_counter/
       providers/    # Riverpod state management
       screens/      # Life counter UI
@@ -81,6 +93,7 @@ lib/
 | **GoRouter** | Declarative routing with persistent bottom nav |
 | **Freezed** | Immutable domain models with code generation |
 | **Material 3** | Custom dark theme with MTG-inspired gold accent |
+| **SharedPreferences** | Local persistence for decks and match history |
 
 ## Getting Started
 
