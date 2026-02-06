@@ -13,6 +13,7 @@ class AppScaffold extends StatelessWidget {
     if (location.startsWith('/${RouteNames.matchTracker}')) return 1;
     if (location.startsWith('/${RouteNames.deckBuilder}')) return 2;
     if (location.startsWith('/${RouteNames.lifeCounter}')) return 3;
+    if (location.startsWith('/${RouteNames.cardSearch}')) return 4;
     return 0;
   }
 
@@ -32,6 +33,8 @@ class AppScaffold extends StatelessWidget {
               context.goNamed(RouteNames.deckBuilder);
             case 3:
               context.goNamed(RouteNames.lifeCounter);
+            case 4:
+              context.goNamed(RouteNames.cardSearch);
           }
         },
         destinations: const [
@@ -54,6 +57,11 @@ class AppScaffold extends StatelessWidget {
             icon: Icon(Icons.favorite_outline),
             selectedIcon: Icon(Icons.favorite),
             label: 'Life',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.search_outlined),
+            selectedIcon: Icon(Icons.search),
+            label: 'Cards',
           ),
         ],
       ),

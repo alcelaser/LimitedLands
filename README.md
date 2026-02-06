@@ -4,7 +4,7 @@
 [![Flutter](https://img.shields.io/badge/Flutter-3.16+-02569B?style=flat-square&logo=flutter)](https://flutter.dev)
 [![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE)
 
-A Magic: The Gathering companion app built with Flutter. Mana calculator, Vintage Cube support, deck builder, match tracker, and life counter -- everything you need at the table.
+A Magic: The Gathering companion app built with Flutter. Mana calculator, Vintage Cube support, deck builder, match tracker, life counter, and 17Lands card ratings -- everything you need at the table.
 
 > **[Download the latest APK](https://github.com/alcelaser/LimitedLands/releases/latest)**
 
@@ -16,7 +16,7 @@ A Magic: The Gathering companion app built with Flutter. Mana calculator, Vintag
 Calculates optimal land distribution using a proportional allocation algorithm with largest-remainder rounding.
 
 - **Limited mode** - Enter mana symbol counts, get land recommendations for 40-card decks
-- **Vintage Cube mode** - Account for fast mana (Moxen, Black Lotus, Mana Crypt) and mana rocks (Sol Ring, Grim Monolith) when calculating lands
+- **Vintage Cube mode** - Account for fast mana (Moxen, Black Lotus, Mana Crypt) and mana rocks (Sol Ring, Grim Monolith) when calculating lands. Tap to add multiples, long-press to reset
 - Supports Limited (40-card) and Constructed (60-card) presets
 - Splash color detection with warnings
 - Fully adjustable deck size and land count
@@ -47,8 +47,21 @@ Clean, modern 2-player life counter designed for face-to-face play.
 
 - Split-screen layout with Player 2 rotated for across-the-table use
 - Tap to adjust by 1, long press for +/-5
+- **Poison counters** - Track infect damage (0-10), color warnings at lethal thresholds
+- **Experience counters** - Track experience for commander abilities
 - Visual warnings at low life totals
 - Quick reset between games
+
+### 17Lands Card Search
+Look up card ratings from 17lands.com for any draft format.
+
+- Search by set code (e.g. FDN, DSK, BLB) and format (Premier Draft, Quick Draft, Sealed)
+- **GIH WR** (Game in Hand Win Rate) - Primary card quality metric, color-coded
+- **ATA** (Average Taken At) - Where the card is typically picked
+- **IWD** (Improvement When Drawn) - How much drawing the card improves win rate
+- Client-side search to quickly filter loaded card data
+- Sortable by name, GIH WR, or ATA
+- Color pips and rarity badges for quick identification
 
 ---
 
@@ -76,6 +89,9 @@ lib/
     life_counter/
       providers/    # Riverpod state management
       screens/      # Life counter UI
+    card_search/
+      providers/    # 17Lands API + state management
+      screens/      # Card search + ratings UI
 ```
 
 | Layer | Responsibility |
@@ -94,6 +110,7 @@ lib/
 | **Freezed** | Immutable domain models with code generation |
 | **Material 3** | Custom dark theme with MTG-inspired gold accent |
 | **SharedPreferences** | Local persistence for decks and match history |
+| **http** | HTTP client for 17Lands API integration |
 
 ## Getting Started
 

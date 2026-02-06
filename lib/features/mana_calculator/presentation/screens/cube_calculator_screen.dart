@@ -31,6 +31,7 @@ class CubeCalculatorScreen extends ConsumerWidget {
               iconColor: Colors.amber,
               sources: state.fastManaSources,
               onToggle: notifier.toggleFastMana,
+              onReset: notifier.resetFastMana,
             ),
             const SizedBox(height: 12),
             // Paid mana
@@ -41,6 +42,7 @@ class CubeCalculatorScreen extends ConsumerWidget {
               iconColor: Colors.blueGrey.shade300,
               sources: state.paidManaSources,
               onToggle: notifier.togglePaidMana,
+              onReset: notifier.resetPaidMana,
             ),
             const SizedBox(height: 12),
             // Output
@@ -203,6 +205,7 @@ class _ManaSourceSection extends StatelessWidget {
   final Color iconColor;
   final List<CubeManaSource> sources;
   final void Function(int) onToggle;
+  final void Function(int) onReset;
 
   const _ManaSourceSection({
     required this.title,
@@ -211,11 +214,12 @@ class _ManaSourceSection extends StatelessWidget {
     required this.iconColor,
     required this.sources,
     required this.onToggle,
+    required this.onReset,
   });
 
   @override
   Widget build(BuildContext context) {
-    final activeCount = sources.where((s) => s.count > 0).length;
+    final totalCount = sources.fold<int>(0, (sum, s) => sum + s.count);
 
     return Card(
       child: Padding(
@@ -233,7 +237,7 @@ class _ManaSourceSection extends StatelessWidget {
                     children: [
                       Text(title,
                           style: Theme.of(context).textTheme.titleLarge),
-                      Text(subtitle,
+                      Text('$subtitle  •  Tap +1, hold to reset',
                           style: Theme.of(context)
                               .textTheme
                               .bodySmall
@@ -245,15 +249,15 @@ class _ManaSourceSection extends StatelessWidget {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: activeCount > 0
+                    color: totalCount > 0
                         ? iconColor.withOpacity(0.15)
                         : Colors.white10,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
-                    '$activeCount',
+                    '$totalCount',
                     style: TextStyle(
-                      color: activeCount > 0 ? iconColor : Colors.white38,
+                      color: totalCount > 0 ? iconColor : Colors.white38,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -273,6 +277,10 @@ class _ManaSourceSection extends StatelessWidget {
                   onTap: () {
                     HapticFeedback.selectionClick();
                     onToggle(i);
+                  },
+                  onLongPress: () {
+                    HapticFeedback.mediumImpact();
+                    onReset(i);
                   },
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 200),
@@ -295,8 +303,27 @@ class _ManaSourceSection extends StatelessWidget {
                         if (isActive)
                           Padding(
                             padding: const EdgeInsets.only(right: 6),
-                            child: Icon(Icons.check_circle,
-                                size: 16, color: iconColor),
+                            child: source.count > 1
+                                ? Container(
+                                    width: 20,
+                                    height: 20,
+                                    decoration: BoxDecoration(
+                                      color: iconColor,
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    child: Center(
+                                      child: Text(
+                                        '${source.count}',
+                                        style: const TextStyle(
+                                          color: Colors.black,
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                  )
+                                : Icon(Icons.check_circle,
+                                    size: 16, color: iconColor),
                           ),
                         Text(
                           source.name,

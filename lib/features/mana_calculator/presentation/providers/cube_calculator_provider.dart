@@ -186,14 +186,26 @@ class CubeCalculatorNotifier extends StateNotifier<CubeCalculatorState> {
   void toggleFastMana(int index) {
     final sources = List<CubeManaSource>.from(state.fastManaSources);
     sources[index] = sources[index]
-        .copyWith(count: sources[index].count == 0 ? 1 : 0);
+        .copyWith(count: sources[index].count + 1);
     _recalculate(state.copyWith(fastManaSources: sources));
   }
 
   void togglePaidMana(int index) {
     final sources = List<CubeManaSource>.from(state.paidManaSources);
     sources[index] = sources[index]
-        .copyWith(count: sources[index].count == 0 ? 1 : 0);
+        .copyWith(count: sources[index].count + 1);
+    _recalculate(state.copyWith(paidManaSources: sources));
+  }
+
+  void resetFastMana(int index) {
+    final sources = List<CubeManaSource>.from(state.fastManaSources);
+    sources[index] = sources[index].copyWith(count: 0);
+    _recalculate(state.copyWith(fastManaSources: sources));
+  }
+
+  void resetPaidMana(int index) {
+    final sources = List<CubeManaSource>.from(state.paidManaSources);
+    sources[index] = sources[index].copyWith(count: 0);
     _recalculate(state.copyWith(paidManaSources: sources));
   }
 

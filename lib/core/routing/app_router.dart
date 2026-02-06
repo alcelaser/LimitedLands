@@ -4,6 +4,7 @@ import '../../features/mana_calculator/presentation/screens/mana_calculator_scre
 import '../../features/life_counter/screens/life_counter_screen.dart';
 import '../../features/deck_builder/screens/deck_list_screen.dart';
 import '../../features/match_tracker/screens/match_tracker_screen.dart';
+import '../../features/card_search/screens/card_search_screen.dart';
 import 'route_names.dart';
 
 class AppRouter {
@@ -34,6 +35,11 @@ class AppRouter {
             path: '/${RouteNames.lifeCounter}',
             name: RouteNames.lifeCounter,
             builder: (context, state) => const LifeCounterScreen(),
+          ),
+          GoRoute(
+            path: '/${RouteNames.cardSearch}',
+            name: RouteNames.cardSearch,
+            builder: (context, state) => const CardSearchScreen(),
           ),
         ],
       ),
