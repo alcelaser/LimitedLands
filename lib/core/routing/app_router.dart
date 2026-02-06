@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../widgets/app_scaffold.dart';
 import '../../features/mana_calculator/presentation/screens/mana_calculator_screen.dart';
 import '../../features/life_counter/screens/life_counter_screen.dart';
+import '../../features/deck_builder/screens/deck_list_screen.dart';
 import 'route_names.dart';
 
 class AppRouter {
@@ -22,12 +23,13 @@ class AppRouter {
           GoRoute(
             path: '/${RouteNames.matchTracker}',
             name: RouteNames.matchTracker,
-            builder: (context, state) => const _ComingSoonScreen(title: 'Match Tracker'),
+            builder: (context, state) =>
+                const _ComingSoonScreen(title: 'Match Tracker'),
           ),
           GoRoute(
             path: '/${RouteNames.deckBuilder}',
             name: RouteNames.deckBuilder,
-            builder: (context, state) => const _ComingSoonScreen(title: 'Deck Builder'),
+            builder: (context, state) => const DeckListScreen(),
           ),
           GoRoute(
             path: '/${RouteNames.lifeCounter}',
