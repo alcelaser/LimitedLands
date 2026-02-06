@@ -11,10 +11,28 @@ class ManaSymbolWidget extends StatelessWidget {
     this.size = 32,
   });
 
+  static IconData _getManaIcon(String manaType) {
+    switch (manaType) {
+      case 'W':
+        return Icons.wb_sunny;
+      case 'U':
+        return Icons.water_drop;
+      case 'B':
+        return Icons.dark_mode;
+      case 'R':
+        return Icons.local_fire_department;
+      case 'G':
+        return Icons.park;
+      default:
+        return Icons.circle;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final color = ColorTokens.getManaColor(manaType);
     final isWhite = manaType == 'W';
+    final icon = _getManaIcon(manaType);
 
     return Container(
       width: size,
@@ -34,15 +52,10 @@ class ManaSymbolWidget extends StatelessWidget {
         ],
       ),
       child: Center(
-        child: Text(
-          manaType,
-          style: TextStyle(
-            color: isWhite || manaType == 'W'
-                ? Colors.black87
-                : Colors.white,
-            fontSize: size * 0.45,
-            fontWeight: FontWeight.bold,
-          ),
+        child: Icon(
+          icon,
+          color: isWhite ? Colors.black87 : Colors.white,
+          size: size * 0.55,
         ),
       ),
     );
