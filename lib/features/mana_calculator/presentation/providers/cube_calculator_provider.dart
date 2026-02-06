@@ -1,0 +1,359 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/constants/mtg_constants.dart';
+
+class CubeManaSource {
+  final String name;
+  final String type; // 'fast' or 'paid'
+  final List<String> colorsProduced; // empty = colorless
+  final int count;
+
+  const CubeManaSource({
+    required this.name,
+    required this.type,
+    this.colorsProduced = const [],
+    this.count = 0,
+  });
+
+  CubeManaSource copyWith({int? count}) {
+    return CubeManaSource(
+      name: name,
+      type: type,
+      colorsProduced: colorsProduced,
+      count: count ?? this.count,
+    );
+  }
+}
+
+class CubeLandResult {
+  final String manaType;
+  final int count;
+  final double percentage;
+  final bool isSplash;
+
+  const CubeLandResult({
+    required this.manaType,
+    required this.count,
+    required this.percentage,
+    this.isSplash = false,
+  });
+}
+
+class CubeRecommendation {
+  final List<CubeLandResult> landCounts;
+  final int totalLands;
+  final int totalManaSourcesIncludingLands;
+  final List<String> warnings;
+  final List<String> tips;
+
+  const CubeRecommendation({
+    this.landCounts = const [],
+    this.totalLands = 0,
+    this.totalManaSourcesIncludingLands = 0,
+    this.warnings = const [],
+    this.tips = const [],
+  });
+}
+
+class CubeCalculatorState {
+  final Map<String, int> symbolCounts;
+  final int deckSize;
+  final int targetManaSourceCount;
+  final List<CubeManaSource> fastManaSources;
+  final List<CubeManaSource> paidManaSources;
+  final CubeRecommendation recommendation;
+
+  const CubeCalculatorState({
+    this.symbolCounts = const {},
+    this.deckSize = 40,
+    this.targetManaSourceCount = 17,
+    this.fastManaSources = const [],
+    this.paidManaSources = const [],
+    this.recommendation = const CubeRecommendation(),
+  });
+
+  CubeCalculatorState copyWith({
+    Map<String, int>? symbolCounts,
+    int? deckSize,
+    int? targetManaSourceCount,
+    List<CubeManaSource>? fastManaSources,
+    List<CubeManaSource>? paidManaSources,
+    CubeRecommendation? recommendation,
+  }) {
+    return CubeCalculatorState(
+      symbolCounts: symbolCounts ?? this.symbolCounts,
+      deckSize: deckSize ?? this.deckSize,
+      targetManaSourceCount:
+          targetManaSourceCount ?? this.targetManaSourceCount,
+      fastManaSources: fastManaSources ?? this.fastManaSources,
+      paidManaSources: paidManaSources ?? this.paidManaSources,
+      recommendation: recommendation ?? this.recommendation,
+    );
+  }
+
+  int get totalFastMana =>
+      fastManaSources.fold<int>(0, (sum, s) => sum + s.count);
+  int get totalPaidMana =>
+      paidManaSources.fold<int>(0, (sum, s) => sum + s.count);
+  int get totalNonLandMana => totalFastMana + totalPaidMana;
+  int get landsNeeded =>
+      (targetManaSourceCount - totalNonLandMana).clamp(0, targetManaSourceCount);
+}
+
+// Default fast mana sources available in Vintage Cube
+List<CubeManaSource> defaultFastManaSources() => const [
+      CubeManaSource(
+          name: 'Black Lotus', type: 'fast', colorsProduced: ['W', 'U', 'B', 'R', 'G']),
+      CubeManaSource(
+          name: 'Mox Sapphire', type: 'fast', colorsProduced: ['U']),
+      CubeManaSource(name: 'Mox Jet', type: 'fast', colorsProduced: ['B']),
+      CubeManaSource(name: 'Mox Ruby', type: 'fast', colorsProduced: ['R']),
+      CubeManaSource(
+          name: 'Mox Pearl', type: 'fast', colorsProduced: ['W']),
+      CubeManaSource(
+          name: 'Mox Emerald', type: 'fast', colorsProduced: ['G']),
+      CubeManaSource(
+          name: 'Chrome Mox', type: 'fast', colorsProduced: ['W', 'U', 'B', 'R', 'G']),
+      CubeManaSource(
+          name: 'Mox Diamond', type: 'fast', colorsProduced: ['W', 'U', 'B', 'R', 'G']),
+      CubeManaSource(
+          name: 'Lotus Petal', type: 'fast', colorsProduced: ['W', 'U', 'B', 'R', 'G']),
+      CubeManaSource(
+          name: 'Mana Crypt', type: 'fast', colorsProduced: []),
+      CubeManaSource(
+          name: 'Mox Opal', type: 'fast', colorsProduced: ['W', 'U', 'B', 'R', 'G']),
+    ];
+
+List<CubeManaSource> defaultPaidManaSources() => const [
+      CubeManaSource(name: 'Sol Ring', type: 'paid', colorsProduced: []),
+      CubeManaSource(
+          name: 'Grim Monolith', type: 'paid', colorsProduced: []),
+      CubeManaSource(
+          name: 'Mana Vault', type: 'paid', colorsProduced: []),
+      CubeManaSource(
+          name: 'Mind Stone', type: 'paid', colorsProduced: []),
+      CubeManaSource(
+          name: 'Worn Powerstone', type: 'paid', colorsProduced: []),
+      CubeManaSource(
+          name: 'Thran Dynamo', type: 'paid', colorsProduced: []),
+      CubeManaSource(
+          name: 'Coalition Relic', type: 'paid', colorsProduced: ['W', 'U', 'B', 'R', 'G']),
+      CubeManaSource(
+          name: 'Chromatic Lantern', type: 'paid', colorsProduced: ['W', 'U', 'B', 'R', 'G']),
+      CubeManaSource(
+          name: 'Basalt Monolith', type: 'paid', colorsProduced: []),
+      CubeManaSource(
+          name: 'Everflowing Chalice', type: 'paid', colorsProduced: []),
+      CubeManaSource(
+          name: 'Signets / Talismans', type: 'paid', colorsProduced: ['W', 'U', 'B', 'R', 'G']),
+    ];
+
+class CubeCalculatorNotifier extends StateNotifier<CubeCalculatorState> {
+  CubeCalculatorNotifier()
+      : super(CubeCalculatorState(
+          fastManaSources: defaultFastManaSources(),
+          paidManaSources: defaultPaidManaSources(),
+        ));
+
+  void incrementSymbol(String manaType) {
+    final newCounts = Map<String, int>.from(state.symbolCounts);
+    newCounts[manaType] = (newCounts[manaType] ?? 0) + 1;
+    _recalculate(state.copyWith(symbolCounts: newCounts));
+  }
+
+  void decrementSymbol(String manaType) {
+    final newCounts = Map<String, int>.from(state.symbolCounts);
+    final current = newCounts[manaType] ?? 0;
+    if (current > 0) {
+      if (current == 1) {
+        newCounts.remove(manaType);
+      } else {
+        newCounts[manaType] = current - 1;
+      }
+      _recalculate(state.copyWith(symbolCounts: newCounts));
+    }
+  }
+
+  void updateTargetManaSourceCount(int count) {
+    if (count < 1) return;
+    _recalculate(state.copyWith(targetManaSourceCount: count));
+  }
+
+  void updateDeckSize(int size) {
+    if (size < 1) return;
+    _recalculate(state.copyWith(deckSize: size));
+  }
+
+  void toggleFastMana(int index) {
+    final sources = List<CubeManaSource>.from(state.fastManaSources);
+    sources[index] = sources[index]
+        .copyWith(count: sources[index].count == 0 ? 1 : 0);
+    _recalculate(state.copyWith(fastManaSources: sources));
+  }
+
+  void togglePaidMana(int index) {
+    final sources = List<CubeManaSource>.from(state.paidManaSources);
+    sources[index] = sources[index]
+        .copyWith(count: sources[index].count == 0 ? 1 : 0);
+    _recalculate(state.copyWith(paidManaSources: sources));
+  }
+
+  void reset() {
+    state = CubeCalculatorState(
+      fastManaSources: defaultFastManaSources(),
+      paidManaSources: defaultPaidManaSources(),
+    );
+  }
+
+  void _recalculate(CubeCalculatorState newState) {
+    final symbolCounts = newState.symbolCounts;
+    final activeColors = Map<String, int>.fromEntries(
+      symbolCounts.entries.where((e) => e.value > 0),
+    );
+
+    if (activeColors.isEmpty) {
+      state = newState.copyWith(recommendation: const CubeRecommendation());
+      return;
+    }
+
+    final totalSymbols = activeColors.values.fold<int>(0, (a, b) => a + b);
+    if (totalSymbols == 0) {
+      state = newState.copyWith(recommendation: const CubeRecommendation());
+      return;
+    }
+
+    final landsNeeded = newState.landsNeeded;
+
+    // Count color-producing non-land mana sources
+    final colorBonus = <String, double>{};
+    for (final source in [
+      ...newState.fastManaSources,
+      ...newState.paidManaSources
+    ]) {
+      if (source.count == 0) continue;
+      if (source.colorsProduced.isEmpty) continue;
+      // Any-color sources count as partial for each active color
+      final activeProduced = source.colorsProduced
+          .where((c) => activeColors.containsKey(c))
+          .toList();
+      if (activeProduced.isEmpty) continue;
+      for (final color in activeProduced) {
+        colorBonus[color] =
+            (colorBonus[color] ?? 0) + (source.count / activeProduced.length);
+      }
+    }
+
+    // Proportional allocation of remaining land slots
+    final rawLands = <String, double>{};
+    for (final entry in activeColors.entries) {
+      final proportion = entry.value / totalSymbols;
+      final bonus = colorBonus[entry.key] ?? 0;
+      rawLands[entry.key] =
+          (proportion * landsNeeded - bonus * 0.5).clamp(0, landsNeeded.toDouble());
+    }
+
+    // Normalize to sum to landsNeeded
+    final rawSum = rawLands.values.fold<double>(0, (a, b) => a + b);
+    if (rawSum > 0) {
+      for (final key in rawLands.keys) {
+        rawLands[key] = (rawLands[key]! / rawSum) * landsNeeded;
+      }
+    }
+
+    // Floor + largest remainder
+    final flooredLands = <String, int>{};
+    for (final entry in rawLands.entries) {
+      flooredLands[entry.key] = entry.value.floor().clamp(0, landsNeeded);
+    }
+    for (final color in activeColors.keys) {
+      if ((flooredLands[color] ?? 0) < 1 && landsNeeded > 0) {
+        flooredLands[color] = 1;
+      }
+    }
+
+    int currentTotal = flooredLands.values.fold<int>(0, (a, b) => a + b);
+    int deficit = landsNeeded - currentTotal;
+
+    if (deficit < 0) {
+      final sorted = flooredLands.entries.toList()
+        ..sort((a, b) => b.value.compareTo(a.value));
+      for (final entry in sorted) {
+        if (deficit >= 0) break;
+        if (entry.value > 1) {
+          flooredLands[entry.key] = entry.value - 1;
+          deficit++;
+        }
+      }
+    } else if (deficit > 0) {
+      final remainders = <String, double>{};
+      for (final entry in rawLands.entries) {
+        remainders[entry.key] = entry.value - (flooredLands[entry.key] ?? 0);
+      }
+      final sorted = remainders.entries.toList()
+        ..sort((a, b) => b.value.compareTo(a.value));
+      int distributed = 0;
+      for (final entry in sorted) {
+        if (distributed >= deficit) break;
+        flooredLands[entry.key] = (flooredLands[entry.key] ?? 0) + 1;
+        distributed++;
+      }
+    }
+
+    // Build results
+    final warnings = <String>[];
+    final tips = <String>[];
+    final landCounts = <CubeLandResult>[];
+    final finalTotal = flooredLands.values.fold<int>(0, (a, b) => a + b);
+
+    for (final manaType in MtgConstants.manaTypes) {
+      final count = flooredLands[manaType];
+      if (count == null || count == 0) continue;
+
+      final symbolRatio = activeColors[manaType]! / totalSymbols;
+      final isSplash = symbolRatio < MtgConstants.splashThreshold;
+
+      if (isSplash) {
+        final colorName = MtgConstants.manaNames[manaType] ?? manaType;
+        warnings.add(
+          '$colorName is a splash (${(symbolRatio * 100).toStringAsFixed(0)}% of pips). '
+          'Artifact mana may cover this.',
+        );
+      }
+
+      landCounts.add(CubeLandResult(
+        manaType: manaType,
+        count: count,
+        percentage: finalTotal > 0 ? count / finalTotal : 0,
+        isSplash: isSplash,
+      ));
+    }
+
+    if (newState.totalFastMana >= 3) {
+      tips.add(
+        'With ${newState.totalFastMana} fast mana sources, consider going down to '
+        '${(newState.targetManaSourceCount - 1)} total mana sources.',
+      );
+    }
+
+    if (newState.totalNonLandMana > 0 && landsNeeded < 14) {
+      tips.add(
+        'Only $landsNeeded lands needed thanks to ${newState.totalNonLandMana} artifact mana sources.',
+      );
+    }
+
+    state = newState.copyWith(
+      recommendation: CubeRecommendation(
+        landCounts: landCounts,
+        totalLands: finalTotal,
+        totalManaSourcesIncludingLands:
+            finalTotal + newState.totalNonLandMana,
+        warnings: warnings,
+        tips: tips,
+      ),
+    );
+  }
+}
+
+final cubeCalculatorProvider =
+    StateNotifierProvider<CubeCalculatorNotifier, CubeCalculatorState>(
+  (ref) => CubeCalculatorNotifier(),
+);
