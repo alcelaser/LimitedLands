@@ -3,12 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:limited_lands/app.dart';
 
 void main() {
-  testWidgets('App renders', (WidgetTester tester) async {
+  testWidgets('App renders without errors', (WidgetTester tester) async {
     await tester.pumpWidget(
       const ProviderScope(
         child: LimitedLandsApp(),
       ),
     );
-    expect(find.text('Limited Lands'), findsOneWidget);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Mana Calculator'), findsOneWidget);
   });
 }
