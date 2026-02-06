@@ -1,6 +1,14 @@
 # Limited Lands
 
+[![Release](https://img.shields.io/github/v/release/alcelaser/LimitedLands?style=flat-square)](https://github.com/alcelaser/LimitedLands/releases/latest)
+[![Flutter](https://img.shields.io/badge/Flutter-3.16+-02569B?style=flat-square&logo=flutter)](https://flutter.dev)
+[![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE)
+
 A Magic: The Gathering companion app for Limited format players, built with Flutter.
+
+> **[Download the latest APK](https://github.com/alcelaser/LimitedLands/releases/latest)**
+
+---
 
 ## Features
 
@@ -17,13 +25,15 @@ Calculates optimal land distribution for your Limited deck using a proportional 
 Clean, modern 2-player life counter designed for face-to-face play.
 
 - Split-screen layout with Player 2 rotated for across-the-table use
-- Tap to adjust by 1, long press to adjust by 5
+- Tap to adjust by 1, long press for +/-5
 - Visual warnings at low life totals
 - Quick reset between games
 
-### Coming Soon
+### Roadmap
 - **Match Tracker** - Record wins/losses across a draft or sealed event
 - **Deck Builder** - Build and save your Limited deck lists
+
+---
 
 ## Architecture
 
@@ -32,7 +42,7 @@ Clean Architecture with feature-based modules:
 ```
 lib/
   core/
-    theme/          # Material 3 dark theme with MTG-inspired colors
+    theme/          # Material 3 dark theme with MTG-inspired palette
     routing/        # GoRouter with ShellRoute + bottom navigation
     constants/      # MTG constants (deck sizes, land counts, thresholds)
     widgets/        # Shared widgets (mana symbols, scaffold)
@@ -45,21 +55,29 @@ lib/
       screens/      # Life counter UI
 ```
 
-**State management**: Riverpod `StateNotifier` pattern
-**Routing**: GoRouter with `ShellRoute` for persistent bottom navigation
-**Models**: Freezed for immutable domain models with code generation
+| Layer | Responsibility |
+|-------|---------------|
+| **Domain** | Immutable models (Freezed), calculation services |
+| **Presentation** | Widgets, screens, Riverpod StateNotifier providers |
+| **Core** | Theming, routing, shared constants and widgets |
 
 ## Tech Stack
 
-- **Flutter** 3.16+ (Android)
-- **Riverpod** for state management
-- **GoRouter** for declarative routing
-- **Freezed** for immutable models
-- **Material 3** with custom dark theme
+| Technology | Purpose |
+|-----------|---------|
+| **Flutter** 3.16+ | Cross-platform UI framework (Android) |
+| **Riverpod** | Reactive state management |
+| **GoRouter** | Declarative routing with persistent bottom nav |
+| **Freezed** | Immutable domain models with code generation |
+| **Material 3** | Custom dark theme with MTG-inspired gold accent |
 
 ## Getting Started
 
 ```bash
+# Clone the repository
+git clone https://github.com/alcelaser/LimitedLands.git
+cd LimitedLands
+
 # Install dependencies
 flutter pub get
 
@@ -72,18 +90,18 @@ flutter run
 # Run tests
 flutter test
 
-# Build release AAB
-flutter build appbundle --release
+# Build release APK
+flutter build apk --release
 ```
 
 ## Testing
 
-- 10 unit tests covering the mana calculation algorithm (proportional distribution, rounding, splash detection, edge cases)
-- Widget integration tests for app rendering
-
 ```bash
 flutter test
 ```
+
+- **10 unit tests** - Mana calculation algorithm: proportional distribution, largest-remainder rounding, splash detection, edge cases (zero input, single color, 5-way equal split)
+- **Widget tests** - App rendering and navigation
 
 ## License
 
