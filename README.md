@@ -4,7 +4,7 @@
 [![Flutter](https://img.shields.io/badge/Flutter-3.16+-02569B?style=flat-square&logo=flutter)](https://flutter.dev)
 [![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE)
 
-A Magic: The Gathering companion app for Limited format players, built with Flutter.
+A Magic: The Gathering companion app built with Flutter. Mana calculator, Vintage Cube support, deck builder, and life counter -- everything you need at the table.
 
 > **[Download the latest APK](https://github.com/alcelaser/LimitedLands/releases/latest)**
 
@@ -13,13 +13,22 @@ A Magic: The Gathering companion app for Limited format players, built with Flut
 ## Features
 
 ### Mana Calculator
-Calculates optimal land distribution for your Limited deck using a proportional allocation algorithm with largest-remainder rounding.
+Calculates optimal land distribution using a proportional allocation algorithm with largest-remainder rounding.
 
-- Enter colored mana symbol counts from your deck
-- Automatically recommends how many of each basic land to play
+- **Limited mode** - Enter mana symbol counts, get land recommendations for 40-card decks
+- **Vintage Cube mode** - Account for fast mana (Moxen, Black Lotus, Mana Crypt) and mana rocks (Sol Ring, Grim Monolith) when calculating lands
 - Supports Limited (40-card) and Constructed (60-card) presets
 - Splash color detection with warnings
 - Fully adjustable deck size and land count
+
+### Deck Builder
+Build and manage your deck lists with mainboard and sideboard tracking.
+
+- Create decks for Limited, Vintage Cube, or Constructed
+- Add cards by name with quantity tracking (+/- buttons)
+- Card count progress indicator (e.g. 23/40)
+- Export deck list as text to clipboard
+- Rename and delete decks
 
 ### Life Counter
 Clean, modern 2-player life counter designed for face-to-face play.
@@ -31,7 +40,6 @@ Clean, modern 2-player life counter designed for face-to-face play.
 
 ### Roadmap
 - **Match Tracker** - Record wins/losses across a draft or sealed event
-- **Deck Builder** - Build and save your Limited deck lists
 
 ---
 
@@ -50,6 +58,9 @@ lib/
     mana_calculator/
       domain/       # Models (freezed) + calculation service
       presentation/ # Screens, widgets, Riverpod providers
+    deck_builder/
+      providers/    # Deck CRUD state management
+      screens/      # Deck list + detail screens
     life_counter/
       providers/    # Riverpod state management
       screens/      # Life counter UI
