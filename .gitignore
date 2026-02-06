@@ -48,4 +48,5 @@ android/key.properties
 *.keystore
 
 # Claude tmp files
-tmpclaude-*.cwd
+tmpclaude-*
+nul
