@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/widgets/card_image_dialog.dart';
 import '../providers/card_search_provider.dart';
 import '../providers/sets_provider.dart';
 
@@ -319,7 +320,10 @@ class _CardSearchScreenState extends ConsumerState<CardSearchScreen> {
       itemCount: cards.length,
       itemBuilder: (context, index) {
         final card = cards[index];
-        return _CardRow(card: card);
+        return GestureDetector(
+          onTap: () => CardImageDialog.show(context, card.name),
+          child: _CardRow(card: card),
+        );
       },
     );
   }
