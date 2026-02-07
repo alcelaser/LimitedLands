@@ -41,6 +41,8 @@ class CubeLandResult {
 class CubeRecommendation {
   final List<CubeLandResult> landCounts;
   final int totalLands;
+  final int basicLandCount;
+  final int nonbasicLandCount;
   final int totalManaSourcesIncludingLands;
   final List<String> warnings;
   final List<String> tips;
@@ -48,6 +50,8 @@ class CubeRecommendation {
   const CubeRecommendation({
     this.landCounts = const [],
     this.totalLands = 0,
+    this.basicLandCount = 0,
+    this.nonbasicLandCount = 0,
     this.totalManaSourcesIncludingLands = 0,
     this.warnings = const [],
     this.tips = const [],
@@ -60,6 +64,9 @@ class CubeCalculatorState {
   final int targetManaSourceCount;
   final List<CubeManaSource> fastManaSources;
   final List<CubeManaSource> paidManaSources;
+  final List<CubeManaSource> fetchLands;
+  final List<CubeManaSource> dualLands;
+  final List<CubeManaSource> utilityLands;
   final CubeRecommendation recommendation;
 
   const CubeCalculatorState({
@@ -68,6 +75,9 @@ class CubeCalculatorState {
     this.targetManaSourceCount = 17,
     this.fastManaSources = const [],
     this.paidManaSources = const [],
+    this.fetchLands = const [],
+    this.dualLands = const [],
+    this.utilityLands = const [],
     this.recommendation = const CubeRecommendation(),
   });
 
@@ -77,6 +87,9 @@ class CubeCalculatorState {
     int? targetManaSourceCount,
     List<CubeManaSource>? fastManaSources,
     List<CubeManaSource>? paidManaSources,
+    List<CubeManaSource>? fetchLands,
+    List<CubeManaSource>? dualLands,
+    List<CubeManaSource>? utilityLands,
     CubeRecommendation? recommendation,
   }) {
     return CubeCalculatorState(
@@ -86,6 +99,9 @@ class CubeCalculatorState {
           targetManaSourceCount ?? this.targetManaSourceCount,
       fastManaSources: fastManaSources ?? this.fastManaSources,
       paidManaSources: paidManaSources ?? this.paidManaSources,
+      fetchLands: fetchLands ?? this.fetchLands,
+      dualLands: dualLands ?? this.dualLands,
+      utilityLands: utilityLands ?? this.utilityLands,
       recommendation: recommendation ?? this.recommendation,
     );
   }
@@ -97,6 +113,11 @@ class CubeCalculatorState {
   int get totalNonLandMana => totalFastMana + totalPaidMana;
   int get landsNeeded =>
       (targetManaSourceCount - totalNonLandMana).clamp(0, targetManaSourceCount);
+  int get totalNonbasicLands =>
+      [...fetchLands, ...dualLands, ...utilityLands]
+          .fold<int>(0, (sum, s) => sum + s.count);
+  int get basicLandsNeeded =>
+      (landsNeeded - totalNonbasicLands).clamp(0, landsNeeded);
 }
 
 // Default fast mana sources available in Vintage Cube
@@ -147,11 +168,82 @@ List<CubeManaSource> defaultPaidManaSources() => const [
           name: 'Signets / Talismans', type: 'paid', colorsProduced: ['W', 'U', 'B', 'R', 'G']),
     ];
 
+// Default fetch lands available in Vintage Cube
+List<CubeManaSource> defaultFetchLands() => const [
+      CubeManaSource(
+          name: 'Flooded Strand', type: 'land', colorsProduced: ['W', 'U']),
+      CubeManaSource(
+          name: 'Polluted Delta', type: 'land', colorsProduced: ['U', 'B']),
+      CubeManaSource(
+          name: 'Bloodstained Mire', type: 'land', colorsProduced: ['B', 'R']),
+      CubeManaSource(
+          name: 'Wooded Foothills', type: 'land', colorsProduced: ['R', 'G']),
+      CubeManaSource(
+          name: 'Windswept Heath', type: 'land', colorsProduced: ['G', 'W']),
+      CubeManaSource(
+          name: 'Marsh Flats', type: 'land', colorsProduced: ['W', 'B']),
+      CubeManaSource(
+          name: 'Scalding Tarn', type: 'land', colorsProduced: ['U', 'R']),
+      CubeManaSource(
+          name: 'Verdant Catacombs', type: 'land', colorsProduced: ['B', 'G']),
+      CubeManaSource(
+          name: 'Arid Mesa', type: 'land', colorsProduced: ['R', 'W']),
+      CubeManaSource(
+          name: 'Misty Rainforest', type: 'land', colorsProduced: ['G', 'U']),
+    ];
+
+// Default dual lands available in Vintage Cube (ABUR duals)
+List<CubeManaSource> defaultDualLands() => const [
+      CubeManaSource(
+          name: 'Tundra', type: 'land', colorsProduced: ['W', 'U']),
+      CubeManaSource(
+          name: 'Underground Sea', type: 'land', colorsProduced: ['U', 'B']),
+      CubeManaSource(
+          name: 'Badlands', type: 'land', colorsProduced: ['B', 'R']),
+      CubeManaSource(
+          name: 'Taiga', type: 'land', colorsProduced: ['R', 'G']),
+      CubeManaSource(
+          name: 'Savannah', type: 'land', colorsProduced: ['G', 'W']),
+      CubeManaSource(
+          name: 'Scrubland', type: 'land', colorsProduced: ['W', 'B']),
+      CubeManaSource(
+          name: 'Volcanic Island', type: 'land', colorsProduced: ['U', 'R']),
+      CubeManaSource(
+          name: 'Bayou', type: 'land', colorsProduced: ['B', 'G']),
+      CubeManaSource(
+          name: 'Plateau', type: 'land', colorsProduced: ['R', 'W']),
+      CubeManaSource(
+          name: 'Tropical Island', type: 'land', colorsProduced: ['G', 'U']),
+    ];
+
+// Default rainbow and utility lands
+List<CubeManaSource> defaultUtilityLands() => const [
+      CubeManaSource(
+          name: 'City of Brass', type: 'land', colorsProduced: ['W', 'U', 'B', 'R', 'G']),
+      CubeManaSource(
+          name: 'Mana Confluence', type: 'land', colorsProduced: ['W', 'U', 'B', 'R', 'G']),
+      CubeManaSource(
+          name: 'Prismatic Vista', type: 'land', colorsProduced: ['W', 'U', 'B', 'R', 'G']),
+      CubeManaSource(
+          name: 'Ancient Tomb', type: 'land', colorsProduced: []),
+      CubeManaSource(
+          name: 'Strip Mine', type: 'land', colorsProduced: []),
+      CubeManaSource(
+          name: 'Wasteland', type: 'land', colorsProduced: []),
+      CubeManaSource(
+          name: 'Library of Alexandria', type: 'land', colorsProduced: []),
+      CubeManaSource(
+          name: 'Tolarian Academy', type: 'land', colorsProduced: []),
+    ];
+
 class CubeCalculatorNotifier extends StateNotifier<CubeCalculatorState> {
   CubeCalculatorNotifier()
       : super(CubeCalculatorState(
           fastManaSources: defaultFastManaSources(),
           paidManaSources: defaultPaidManaSources(),
+          fetchLands: defaultFetchLands(),
+          dualLands: defaultDualLands(),
+          utilityLands: defaultUtilityLands(),
         ));
 
   void incrementSymbol(String manaType) {
@@ -209,10 +301,52 @@ class CubeCalculatorNotifier extends StateNotifier<CubeCalculatorState> {
     _recalculate(state.copyWith(paidManaSources: sources));
   }
 
+  void toggleFetchLand(int index) {
+    final sources = List<CubeManaSource>.from(state.fetchLands);
+    sources[index] = sources[index]
+        .copyWith(count: sources[index].count + 1);
+    _recalculate(state.copyWith(fetchLands: sources));
+  }
+
+  void resetFetchLand(int index) {
+    final sources = List<CubeManaSource>.from(state.fetchLands);
+    sources[index] = sources[index].copyWith(count: 0);
+    _recalculate(state.copyWith(fetchLands: sources));
+  }
+
+  void toggleDualLand(int index) {
+    final sources = List<CubeManaSource>.from(state.dualLands);
+    sources[index] = sources[index]
+        .copyWith(count: sources[index].count + 1);
+    _recalculate(state.copyWith(dualLands: sources));
+  }
+
+  void resetDualLand(int index) {
+    final sources = List<CubeManaSource>.from(state.dualLands);
+    sources[index] = sources[index].copyWith(count: 0);
+    _recalculate(state.copyWith(dualLands: sources));
+  }
+
+  void toggleUtilityLand(int index) {
+    final sources = List<CubeManaSource>.from(state.utilityLands);
+    sources[index] = sources[index]
+        .copyWith(count: sources[index].count + 1);
+    _recalculate(state.copyWith(utilityLands: sources));
+  }
+
+  void resetUtilityLand(int index) {
+    final sources = List<CubeManaSource>.from(state.utilityLands);
+    sources[index] = sources[index].copyWith(count: 0);
+    _recalculate(state.copyWith(utilityLands: sources));
+  }
+
   void reset() {
     state = CubeCalculatorState(
       fastManaSources: defaultFastManaSources(),
       paidManaSources: defaultPaidManaSources(),
+      fetchLands: defaultFetchLands(),
+      dualLands: defaultDualLands(),
+      utilityLands: defaultUtilityLands(),
     );
   }
 
@@ -234,16 +368,20 @@ class CubeCalculatorNotifier extends StateNotifier<CubeCalculatorState> {
     }
 
     final landsNeeded = newState.landsNeeded;
+    final nonbasicCount = newState.totalNonbasicLands;
+    final basicLandsNeeded = newState.basicLandsNeeded;
 
-    // Count color-producing non-land mana sources
+    // Count color-producing sources (both artifact mana AND nonbasic lands)
     final colorBonus = <String, double>{};
     for (final source in [
       ...newState.fastManaSources,
-      ...newState.paidManaSources
+      ...newState.paidManaSources,
+      ...newState.fetchLands,
+      ...newState.dualLands,
+      ...newState.utilityLands,
     ]) {
       if (source.count == 0) continue;
       if (source.colorsProduced.isEmpty) continue;
-      // Any-color sources count as partial for each active color
       final activeProduced = source.colorsProduced
           .where((c) => activeColors.containsKey(c))
           .toList();
@@ -254,36 +392,38 @@ class CubeCalculatorNotifier extends StateNotifier<CubeCalculatorState> {
       }
     }
 
-    // Proportional allocation of remaining land slots
+    // Proportional allocation of basic land slots
     final rawLands = <String, double>{};
     for (final entry in activeColors.entries) {
       final proportion = entry.value / totalSymbols;
       final bonus = colorBonus[entry.key] ?? 0;
       rawLands[entry.key] =
-          (proportion * landsNeeded - bonus * 0.5).clamp(0, landsNeeded.toDouble());
+          (proportion * basicLandsNeeded - bonus * 0.5).clamp(0, basicLandsNeeded.toDouble());
     }
 
-    // Normalize to sum to landsNeeded
+    // Normalize to sum to basicLandsNeeded
     final rawSum = rawLands.values.fold<double>(0, (a, b) => a + b);
     if (rawSum > 0) {
       for (final key in rawLands.keys) {
-        rawLands[key] = (rawLands[key]! / rawSum) * landsNeeded;
+        rawLands[key] = (rawLands[key]! / rawSum) * basicLandsNeeded;
       }
     }
 
     // Floor + largest remainder
     final flooredLands = <String, int>{};
     for (final entry in rawLands.entries) {
-      flooredLands[entry.key] = entry.value.floor().clamp(0, landsNeeded);
+      flooredLands[entry.key] = entry.value.floor().clamp(0, basicLandsNeeded);
     }
-    for (final color in activeColors.keys) {
-      if ((flooredLands[color] ?? 0) < 1 && landsNeeded > 0) {
-        flooredLands[color] = 1;
+    if (basicLandsNeeded > 0) {
+      for (final color in activeColors.keys) {
+        if ((flooredLands[color] ?? 0) < 1) {
+          flooredLands[color] = 1;
+        }
       }
     }
 
     int currentTotal = flooredLands.values.fold<int>(0, (a, b) => a + b);
-    int deficit = landsNeeded - currentTotal;
+    int deficit = basicLandsNeeded - currentTotal;
 
     if (deficit < 0) {
       final sorted = flooredLands.entries.toList()
@@ -314,7 +454,8 @@ class CubeCalculatorNotifier extends StateNotifier<CubeCalculatorState> {
     final warnings = <String>[];
     final tips = <String>[];
     final landCounts = <CubeLandResult>[];
-    final finalTotal = flooredLands.values.fold<int>(0, (a, b) => a + b);
+    final finalBasicTotal = flooredLands.values.fold<int>(0, (a, b) => a + b);
+    final finalTotal = finalBasicTotal + nonbasicCount;
 
     for (final manaType in MtgConstants.manaTypes) {
       final count = flooredLands[manaType];
@@ -334,7 +475,7 @@ class CubeCalculatorNotifier extends StateNotifier<CubeCalculatorState> {
       landCounts.add(CubeLandResult(
         manaType: manaType,
         count: count,
-        percentage: finalTotal > 0 ? count / finalTotal : 0,
+        percentage: finalBasicTotal > 0 ? count / finalBasicTotal : 0,
         isSplash: isSplash,
       ));
     }
@@ -352,10 +493,19 @@ class CubeCalculatorNotifier extends StateNotifier<CubeCalculatorState> {
       );
     }
 
+    if (nonbasicCount > 0) {
+      tips.add(
+        '$nonbasicCount nonbasic land${nonbasicCount > 1 ? 's' : ''} replacing '
+        'basic land slots. $finalBasicTotal basic lands remaining.',
+      );
+    }
+
     state = newState.copyWith(
       recommendation: CubeRecommendation(
         landCounts: landCounts,
         totalLands: finalTotal,
+        basicLandCount: finalBasicTotal,
+        nonbasicLandCount: nonbasicCount,
         totalManaSourcesIncludingLands:
             finalTotal + newState.totalNonLandMana,
         warnings: warnings,

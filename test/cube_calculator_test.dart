@@ -394,6 +394,22 @@ void main() {
       for (final source in state.paidManaSources) {
         expect(source.count, 0);
       }
+
+      // Nonbasic land sources should be re-initialized with defaults (count=0)
+      expect(state.fetchLands.length, 10);
+      expect(state.dualLands.length, 10);
+      expect(state.utilityLands.length, 8);
+      for (final source in state.fetchLands) {
+        expect(source.count, 0);
+      }
+      for (final source in state.dualLands) {
+        expect(source.count, 0);
+      }
+      for (final source in state.utilityLands) {
+        expect(source.count, 0);
+      }
+      expect(state.totalNonbasicLands, 0);
+      expect(state.basicLandsNeeded, 17);
     });
   });
 
@@ -629,6 +645,200 @@ void main() {
       expect(state.landsNeeded, 15);
       expect(state.recommendation.totalLands, 15);
       expect(state.recommendation.totalManaSourcesIncludingLands, 17);
+    });
+  });
+
+  // ===========================================================================
+  // Group: Nonbasic lands
+  // ===========================================================================
+  group('Nonbasic lands', () {
+    setUp(() {
+      // Start with some color symbols for recalculate to produce results
+      for (int i = 0; i < 10; i++) {
+        notifier.incrementSymbol('W');
+      }
+    });
+
+    test('one nonbasic land reduces basic land count by 1', () {
+      // Toggle Ancient Tomb (index 3, colorless utility land)
+      notifier.toggleUtilityLand(3);
+
+      final state = notifier.state;
+      expect(state.totalNonbasicLands, 1);
+      expect(state.basicLandsNeeded, 16);
+      // landsNeeded is unchanged (nonbasic lands don't reduce it)
+      expect(state.landsNeeded, 17);
+      // Basic lands from recommendation should equal basicLandsNeeded
+      expect(totalRecommendedLands(state), 16);
+      // totalLands = basics + nonbasics
+      expect(state.recommendation.totalLands, 17);
+      expect(state.recommendation.basicLandCount, 16);
+      expect(state.recommendation.nonbasicLandCount, 1);
+    });
+
+    test('multiple nonbasics from different categories stack', () {
+      // Fetch land: Flooded Strand (index 0, W/U)
+      notifier.toggleFetchLand(0);
+      // Dual land: Tundra (index 0, W/U)
+      notifier.toggleDualLand(0);
+      // Utility: Ancient Tomb (index 3, colorless)
+      notifier.toggleUtilityLand(3);
+
+      final state = notifier.state;
+      expect(state.totalNonbasicLands, 3);
+      expect(state.basicLandsNeeded, 14);
+      expect(state.landsNeeded, 17);
+      expect(totalRecommendedLands(state), 14);
+      expect(state.recommendation.totalLands, 17);
+    });
+
+    test('toggling same nonbasic twice increments count to 2', () {
+      notifier.toggleFetchLand(0); // Flooded Strand (count -> 1)
+      notifier.toggleFetchLand(0); // Flooded Strand (count -> 2)
+
+      expect(notifier.state.fetchLands[0].count, 2);
+      expect(notifier.state.totalNonbasicLands, 2);
+      expect(notifier.state.basicLandsNeeded, 15);
+    });
+
+    test('color-producing nonbasic shifts distribution away from those colors', () {
+      // Equal symbols: W: 10, U: 10
+      for (int i = 0; i < 10; i++) {
+        notifier.incrementSymbol('U');
+      }
+
+      // Capture baseline (W: 10, U: 10 -> should be roughly equal)
+      final baselineState = notifier.state;
+      final baselineBlue = landFor(baselineState, 'U')!.count;
+      final baselineWhite = landFor(baselineState, 'W')!.count;
+      expect((baselineBlue - baselineWhite).abs(), lessThanOrEqualTo(1));
+
+      // Add Tundra (dual land, produces W/U) - shifts both colors
+      notifier.toggleDualLand(0);
+      // Add Flooded Strand (fetch land, produces W/U) - shifts both colors
+      notifier.toggleFetchLand(0);
+
+      final state = notifier.state;
+      // Total lands should still be 17 (landsNeeded unchanged)
+      expect(state.recommendation.totalLands, 17);
+      // But basic lands reduced to 15
+      expect(totalRecommendedLands(state), 15);
+    });
+
+    test('nonbasic + artifact interaction: both reduce basics correctly', () {
+      // Add Mana Crypt (fast mana, colorless) - reduces landsNeeded to 16
+      notifier.toggleFastMana(9);
+      // Add Ancient Tomb (utility land, colorless) - reduces basics by 1
+      notifier.toggleUtilityLand(3);
+
+      final state = notifier.state;
+      expect(state.totalNonLandMana, 1);
+      expect(state.landsNeeded, 16); // 17 - 1 artifact
+      expect(state.totalNonbasicLands, 1);
+      expect(state.basicLandsNeeded, 15); // 16 - 1 nonbasic
+      expect(totalRecommendedLands(state), 15);
+      expect(state.recommendation.totalLands, 16); // 15 basic + 1 nonbasic
+      // Total mana sources = artifact(1) + lands(16) = 17
+      expect(state.recommendation.totalManaSourcesIncludingLands, 17);
+    });
+
+    test('nonbasic count clamped so basicLandsNeeded cannot go negative', () {
+      // Add many nonbasic lands (more than landsNeeded of 17)
+      for (int i = 0; i < 10; i++) {
+        notifier.toggleFetchLand(i); // 10 fetch lands
+      }
+      for (int i = 0; i < 10; i++) {
+        notifier.toggleDualLand(i); // 10 dual lands
+      }
+      // That's 20 nonbasic lands but only 17 land slots
+
+      final state = notifier.state;
+      expect(state.totalNonbasicLands, 20);
+      expect(state.landsNeeded, 17);
+      expect(state.basicLandsNeeded, 0); // clamped at 0
+      // Basic lands output should be 0
+      expect(totalRecommendedLands(state), 0);
+      // Total lands = 0 basic + 20 nonbasic = 20
+      expect(state.recommendation.totalLands, 20);
+    });
+
+    test('reset clears all nonbasic land counts', () {
+      notifier.toggleFetchLand(0);
+      notifier.toggleDualLand(0);
+      notifier.toggleUtilityLand(0);
+
+      expect(notifier.state.totalNonbasicLands, 3);
+
+      notifier.reset();
+
+      final state = notifier.state;
+      expect(state.totalNonbasicLands, 0);
+      expect(state.fetchLands.length, 10);
+      expect(state.dualLands.length, 10);
+      expect(state.utilityLands.length, 8);
+      for (final source in [...state.fetchLands, ...state.dualLands, ...state.utilityLands]) {
+        expect(source.count, 0);
+      }
+    });
+
+    test('resetFetchLand sets count back to 0', () {
+      notifier.toggleFetchLand(0);
+      notifier.toggleFetchLand(0);
+      expect(notifier.state.fetchLands[0].count, 2);
+
+      notifier.resetFetchLand(0);
+      expect(notifier.state.fetchLands[0].count, 0);
+    });
+
+    test('resetDualLand sets count back to 0', () {
+      notifier.toggleDualLand(0);
+      notifier.toggleDualLand(0);
+      expect(notifier.state.dualLands[0].count, 2);
+
+      notifier.resetDualLand(0);
+      expect(notifier.state.dualLands[0].count, 0);
+    });
+
+    test('resetUtilityLand sets count back to 0', () {
+      notifier.toggleUtilityLand(0);
+      notifier.toggleUtilityLand(0);
+      expect(notifier.state.utilityLands[0].count, 2);
+
+      notifier.resetUtilityLand(0);
+      expect(notifier.state.utilityLands[0].count, 0);
+    });
+
+    test('nonbasic land generates tip about replacing basic slots', () {
+      notifier.toggleFetchLand(0); // Flooded Strand
+
+      final state = notifier.state;
+      expect(
+        state.recommendation.tips,
+        anyElement(contains('nonbasic land')),
+      );
+      expect(
+        state.recommendation.tips,
+        anyElement(contains('basic land')),
+      );
+    });
+
+    test('default land lists have correct lengths', () {
+      final state = notifier.state;
+      expect(state.fetchLands.length, 10);
+      expect(state.dualLands.length, 10);
+      expect(state.utilityLands.length, 8);
+    });
+
+    test('recommendation includes basicLandCount and nonbasicLandCount', () {
+      notifier.toggleFetchLand(0); // Flooded Strand
+      notifier.toggleDualLand(0); // Tundra
+      notifier.toggleUtilityLand(3); // Ancient Tomb
+
+      final rec = notifier.state.recommendation;
+      expect(rec.nonbasicLandCount, 3);
+      expect(rec.basicLandCount, 14);
+      expect(rec.totalLands, 17);
+      expect(rec.basicLandCount + rec.nonbasicLandCount, rec.totalLands);
     });
   });
 }

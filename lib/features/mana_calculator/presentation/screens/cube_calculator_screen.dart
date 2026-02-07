@@ -45,6 +45,37 @@ class CubeCalculatorScreen extends ConsumerWidget {
               onReset: notifier.resetPaidMana,
             ),
             const SizedBox(height: 12),
+            // Nonbasic lands
+            _ManaSourceSection(
+              title: 'Fetch Lands',
+              subtitle: 'Color-fixing fetchlands',
+              icon: Icons.swap_vert,
+              iconColor: Colors.teal,
+              sources: state.fetchLands,
+              onToggle: notifier.toggleFetchLand,
+              onReset: notifier.resetFetchLand,
+            ),
+            const SizedBox(height: 12),
+            _ManaSourceSection(
+              title: 'Dual Lands',
+              subtitle: 'ABUR dual lands',
+              icon: Icons.join_inner,
+              iconColor: Colors.deepPurple.shade300,
+              sources: state.dualLands,
+              onToggle: notifier.toggleDualLand,
+              onReset: notifier.resetDualLand,
+            ),
+            const SizedBox(height: 12),
+            _ManaSourceSection(
+              title: 'Other Lands',
+              subtitle: 'Rainbow & utility lands',
+              icon: Icons.public,
+              iconColor: Colors.orange.shade300,
+              sources: state.utilityLands,
+              onToggle: notifier.toggleUtilityLand,
+              onReset: notifier.resetUtilityLand,
+            ),
+            const SizedBox(height: 12),
             // Output
             _CubeOutput(state: state),
             const SizedBox(height: 24),
@@ -114,7 +145,10 @@ class _CubeDeckConfig extends StatelessWidget {
                         .textTheme
                         .bodyMedium
                         ?.copyWith(color: Colors.white54)),
-                Text('Lands needed: ${state.landsNeeded}',
+                Text(
+                    state.totalNonbasicLands > 0
+                        ? 'Lands: ${state.landsNeeded} (${state.basicLandsNeeded} basic)'
+                        : 'Lands needed: ${state.landsNeeded}',
                     style: Theme.of(context)
                         .textTheme
                         .bodyMedium
@@ -434,7 +468,9 @@ class _CubeOutput extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.only(top: 4),
                 child: Text(
-                  '${rec.totalManaSourcesIncludingLands} total mana sources (${state.totalNonLandMana} artifact + ${rec.totalLands} land)',
+                  rec.nonbasicLandCount > 0
+                      ? '${rec.totalManaSourcesIncludingLands} total mana sources (${state.totalNonLandMana} artifact + ${rec.basicLandCount} basic + ${rec.nonbasicLandCount} nonbasic)'
+                      : '${rec.totalManaSourcesIncludingLands} total mana sources (${state.totalNonLandMana} artifact + ${rec.totalLands} land)',
                   style: Theme.of(context)
                       .textTheme
                       .bodySmall
