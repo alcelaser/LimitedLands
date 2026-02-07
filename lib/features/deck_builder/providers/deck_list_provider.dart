@@ -96,10 +96,51 @@ class Deck {
   }
 }
 
+class DeckFolder {
+  final String id;
+  final String name;
+  final List<String> deckIds;
+
+  const DeckFolder({
+    required this.id,
+    required this.name,
+    this.deckIds = const [],
+  });
+
+  DeckFolder copyWith({
+    String? name,
+    List<String>? deckIds,
+  }) {
+    return DeckFolder(
+      id: id,
+      name: name ?? this.name,
+      deckIds: deckIds ?? this.deckIds,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'name': name,
+        'deckIds': deckIds,
+      };
+
+  factory DeckFolder.fromJson(Map<String, dynamic> json) {
+    return DeckFolder(
+      id: json['id'] as String,
+      name: json['name'] as String,
+      deckIds: (json['deckIds'] as List<dynamic>?)
+              ?.map((e) => e as String)
+              .toList() ??
+          [],
+    );
+  }
+}
+
 class DeckListState {
   final List<Deck> decks;
+  final List<DeckFolder> folders;
 
-  const DeckListState({this.decks = const []});
+  const DeckListState({this.decks = const [], this.folders = const []});
 }
 
 class DeckListNotifier extends StateNotifier<DeckListState> {
@@ -108,17 +149,36 @@ class DeckListNotifier extends StateNotifier<DeckListState> {
   }
 
   int _nextId = 1;
+  int _nextFolderId = 1;
 
   Future<void> _loadFromStorage() async {
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.getString(_storageKey);
     if (raw == null) return;
     try {
-      final list = jsonDecode(raw) as List<dynamic>;
-      final decks = list
-          .map((e) => Deck.fromJson(e as Map<String, dynamic>))
-          .toList();
-      // Recover next ID from loaded decks
+      final decoded = jsonDecode(raw);
+      List<Deck> decks;
+      List<DeckFolder> folders = [];
+
+      if (decoded is List) {
+        // Legacy format: plain array of decks
+        decks = decoded
+            .map((e) => Deck.fromJson(e as Map<String, dynamic>))
+            .toList();
+      } else {
+        // New format: {decks: [...], folders: [...]}
+        final map = decoded as Map<String, dynamic>;
+        decks = (map['decks'] as List<dynamic>?)
+                ?.map((e) => Deck.fromJson(e as Map<String, dynamic>))
+                .toList() ??
+            [];
+        folders = (map['folders'] as List<dynamic>?)
+                ?.map((e) => DeckFolder.fromJson(e as Map<String, dynamic>))
+                .toList() ??
+            [];
+      }
+
+      // Recover next IDs from loaded data
       for (final deck in decks) {
         final parts = deck.id.split('_');
         if (parts.length == 2) {
@@ -128,7 +188,16 @@ class DeckListNotifier extends StateNotifier<DeckListState> {
           }
         }
       }
-      state = DeckListState(decks: decks);
+      for (final folder in folders) {
+        final parts = folder.id.split('_');
+        if (parts.length == 2) {
+          final num = int.tryParse(parts[1]);
+          if (num != null && num >= _nextFolderId) {
+            _nextFolderId = num + 1;
+          }
+        }
+      }
+      state = DeckListState(decks: decks, folders: folders);
     } catch (_) {
       // Corrupted data: start fresh
     }
@@ -136,8 +205,11 @@ class DeckListNotifier extends StateNotifier<DeckListState> {
 
   Future<void> _saveToStorage() async {
     final prefs = await SharedPreferences.getInstance();
-    final json = state.decks.map((d) => d.toJson()).toList();
-    await prefs.setString(_storageKey, jsonEncode(json));
+    final data = {
+      'decks': state.decks.map((d) => d.toJson()).toList(),
+      'folders': state.folders.map((f) => f.toJson()).toList(),
+    };
+    await prefs.setString(_storageKey, jsonEncode(data));
   }
 
   Deck createDeck({String name = 'New Deck', String format = 'Limited'}) {
@@ -146,21 +218,34 @@ class DeckListNotifier extends StateNotifier<DeckListState> {
       name: name,
       format: format,
     );
-    state = DeckListState(decks: [...state.decks, deck]);
+    state = DeckListState(
+      decks: [...state.decks, deck],
+      folders: state.folders,
+    );
     _saveToStorage();
     return deck;
   }
 
   void deleteDeck(String id) {
+    // Also remove from any folder
+    final updatedFolders = state.folders.map((f) {
+      if (f.deckIds.contains(id)) {
+        return f.copyWith(deckIds: f.deckIds.where((d) => d != id).toList());
+      }
+      return f;
+    }).toList();
     state = DeckListState(
       decks: state.decks.where((d) => d.id != id).toList(),
+      folders: updatedFolders,
     );
     _saveToStorage();
   }
 
   void updateDeck(Deck updated) {
     state = DeckListState(
-      decks: state.decks.map((d) => d.id == updated.id ? updated : d).toList(),
+      decks:
+          state.decks.map((d) => d.id == updated.id ? updated : d).toList(),
+      folders: state.folders,
     );
     _saveToStorage();
   }
@@ -228,6 +313,79 @@ class DeckListNotifier extends StateNotifier<DeckListState> {
       newSideboard.removeAt(index);
     }
     updateDeck(deck.copyWith(sideboard: newSideboard));
+  }
+
+  // --- Folder operations ---
+
+  DeckFolder createFolder(String name) {
+    final folder = DeckFolder(
+      id: 'folder_${_nextFolderId++}',
+      name: name,
+    );
+    state = DeckListState(
+      decks: state.decks,
+      folders: [...state.folders, folder],
+    );
+    _saveToStorage();
+    return folder;
+  }
+
+  void renameFolder(String folderId, String newName) {
+    state = DeckListState(
+      decks: state.decks,
+      folders: state.folders
+          .map((f) => f.id == folderId ? f.copyWith(name: newName) : f)
+          .toList(),
+    );
+    _saveToStorage();
+  }
+
+  void deleteFolder(String folderId) {
+    state = DeckListState(
+      decks: state.decks,
+      folders: state.folders.where((f) => f.id != folderId).toList(),
+    );
+    _saveToStorage();
+  }
+
+  void moveDeckToFolder(String deckId, String folderId) {
+    // Remove deck from all folders first, then add to target
+    final updatedFolders = state.folders.map((f) {
+      final withoutDeck =
+          f.deckIds.where((id) => id != deckId).toList();
+      if (f.id == folderId) {
+        return f.copyWith(deckIds: [...withoutDeck, deckId]);
+      }
+      return f.copyWith(deckIds: withoutDeck);
+    }).toList();
+    state = DeckListState(
+      decks: state.decks,
+      folders: updatedFolders,
+    );
+    _saveToStorage();
+  }
+
+  void removeDeckFromFolder(String deckId) {
+    final updatedFolders = state.folders.map((f) {
+      if (f.deckIds.contains(deckId)) {
+        return f.copyWith(
+            deckIds: f.deckIds.where((id) => id != deckId).toList());
+      }
+      return f;
+    }).toList();
+    state = DeckListState(
+      decks: state.decks,
+      folders: updatedFolders,
+    );
+    _saveToStorage();
+  }
+
+  /// Returns the folder containing the given deck, or null if unfiled.
+  String? folderForDeck(String deckId) {
+    for (final f in state.folders) {
+      if (f.deckIds.contains(deckId)) return f.id;
+    }
+    return null;
   }
 }
 

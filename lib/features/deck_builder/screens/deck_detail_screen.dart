@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/services/scryfall_image_service.dart';
 import '../../../core/widgets/card_image_dialog.dart';
+import '../providers/card_price_provider.dart';
 import '../providers/deck_list_provider.dart';
 import '../providers/scryfall_provider.dart';
 
@@ -22,6 +23,38 @@ class _DeckDetailScreenState extends ConsumerState<DeckDetailScreen> {
   bool _addToSideboard = false;
   bool _imageViewMode = false;
   bool _isResolvingSetNumber = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _fetchPricesForDeck();
+    });
+  }
+
+  void _fetchPricesForDeck() {
+    final state = ref.read(deckListProvider);
+    final deck = state.decks.where((d) => d.id == widget.deckId).firstOrNull;
+    if (deck == null) return;
+    final names = [
+      ...deck.mainboard.map((c) => c.name),
+      ...deck.sideboard.map((c) => c.name),
+    ];
+    ref.read(cardPriceProvider.notifier).fetchPricesForCards(names);
+  }
+
+  double? _sectionTotal(List<DeckCard> cards, CardPriceState priceState) {
+    double total = 0;
+    bool anyFound = false;
+    for (final card in cards) {
+      final price = priceState.priceFor(card.name);
+      if (price != null) {
+        total += price * card.quantity;
+        anyFound = true;
+      }
+    }
+    return anyFound ? total : null;
+  }
 
   @override
   void dispose() {
@@ -97,6 +130,26 @@ class _DeckDetailScreenState extends ConsumerState<DeckDetailScreen> {
         appBar: AppBar(title: const Text('Deck')),
         body: const Center(child: Text('Deck not found')),
       );
+    }
+
+    final priceState = ref.watch(cardPriceProvider);
+
+    // Auto-fetch prices for any uncached card names
+    final allCardNames = [
+      ...deck.mainboard.map((c) => c.name),
+      ...deck.sideboard.map((c) => c.name),
+    ];
+    final uncachedNames = allCardNames
+        .where((n) => !priceState.prices.containsKey(n.toLowerCase()))
+        .toList();
+    if (uncachedNames.isNotEmpty && !priceState.isLoading) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          ref
+              .read(cardPriceProvider.notifier)
+              .fetchPricesForCards(uncachedNames);
+        }
+      });
     }
 
     return Scaffold(
@@ -235,15 +288,18 @@ class _DeckDetailScreenState extends ConsumerState<DeckDetailScreen> {
           // Card lists
           Expanded(
             child: _imageViewMode
-                ? _buildImageGridView(deck)
-                : _buildTextListView(deck),
+                ? _buildImageGridView(deck, priceState)
+                : _buildTextListView(deck, priceState),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildTextListView(Deck deck) {
+  Widget _buildTextListView(Deck deck, CardPriceState priceState) {
+    final mainboardTotal = _sectionTotal(deck.mainboard, priceState);
+    final sideboardTotal = _sectionTotal(deck.sideboard, priceState);
+
     return ListView(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       children: [
@@ -252,6 +308,7 @@ class _DeckDetailScreenState extends ConsumerState<DeckDetailScreen> {
           title: 'Mainboard',
           count: deck.mainboardCount,
           targetCount: deck.format == 'Constructed' ? 60 : 40,
+          totalPrice: mainboardTotal,
         ),
         if (deck.mainboard.isEmpty)
           const Padding(
@@ -266,6 +323,7 @@ class _DeckDetailScreenState extends ConsumerState<DeckDetailScreen> {
             final card = deck.mainboard[i];
             return _CardRow(
               card: card,
+              price: priceState.priceFor(card.name),
               onRemove: () {
                 HapticFeedback.lightImpact();
                 ref
@@ -286,6 +344,7 @@ class _DeckDetailScreenState extends ConsumerState<DeckDetailScreen> {
         _SectionHeader(
           title: 'Sideboard',
           count: deck.sideboardCount,
+          totalPrice: sideboardTotal,
         ),
         if (deck.sideboard.isEmpty)
           const Padding(
@@ -300,6 +359,7 @@ class _DeckDetailScreenState extends ConsumerState<DeckDetailScreen> {
             final card = deck.sideboard[i];
             return _CardRow(
               card: card,
+              price: priceState.priceFor(card.name),
               onRemove: () {
                 HapticFeedback.lightImpact();
                 ref
@@ -320,7 +380,10 @@ class _DeckDetailScreenState extends ConsumerState<DeckDetailScreen> {
     );
   }
 
-  Widget _buildImageGridView(Deck deck) {
+  Widget _buildImageGridView(Deck deck, CardPriceState priceState) {
+    final mainboardTotal = _sectionTotal(deck.mainboard, priceState);
+    final sideboardTotal = _sectionTotal(deck.sideboard, priceState);
+
     if (deck.mainboard.isEmpty && deck.sideboard.isEmpty) {
       return const Center(
         child: Text('No cards yet', style: TextStyle(color: Colors.white38)),
@@ -337,6 +400,7 @@ class _DeckDetailScreenState extends ConsumerState<DeckDetailScreen> {
                 title: 'Mainboard',
                 count: deck.mainboardCount,
                 targetCount: deck.format == 'Constructed' ? 60 : 40,
+                totalPrice: mainboardTotal,
               ),
             ),
           ),
@@ -354,6 +418,7 @@ class _DeckDetailScreenState extends ConsumerState<DeckDetailScreen> {
                   final card = deck.mainboard[index];
                   return _CardImageTile(
                     card: card,
+                    price: priceState.priceFor(card.name),
                     onTap: () => CardImageDialog.show(context, card.name),
                   );
                 },
@@ -369,6 +434,7 @@ class _DeckDetailScreenState extends ConsumerState<DeckDetailScreen> {
               child: _SectionHeader(
                 title: 'Sideboard',
                 count: deck.sideboardCount,
+                totalPrice: sideboardTotal,
               ),
             ),
           ),
@@ -386,6 +452,7 @@ class _DeckDetailScreenState extends ConsumerState<DeckDetailScreen> {
                   final card = deck.sideboard[index];
                   return _CardImageTile(
                     card: card,
+                    price: priceState.priceFor(card.name),
                     onTap: () => CardImageDialog.show(context, card.name),
                   );
                 },
@@ -508,11 +575,13 @@ class _SectionHeader extends StatelessWidget {
   final String title;
   final int count;
   final int? targetCount;
+  final double? totalPrice;
 
   const _SectionHeader({
     required this.title,
     required this.count,
     this.targetCount,
+    this.totalPrice,
   });
 
   @override
@@ -552,6 +621,16 @@ class _SectionHeader extends StatelessWidget {
               ),
             ),
           ),
+          const Spacer(),
+          if (totalPrice != null)
+            Text(
+              '${totalPrice!.toStringAsFixed(2)}\u20AC',
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.5),
+                fontWeight: FontWeight.w500,
+                fontSize: 13,
+              ),
+            ),
         ],
       ),
     );
@@ -560,12 +639,14 @@ class _SectionHeader extends StatelessWidget {
 
 class _CardRow extends StatelessWidget {
   final DeckCard card;
+  final double? price;
   final VoidCallback onRemove;
   final VoidCallback onAdd;
   final VoidCallback? onTap;
 
   const _CardRow({
     required this.card,
+    this.price,
     required this.onRemove,
     required this.onAdd,
     this.onTap,
@@ -594,6 +675,17 @@ class _CardRow extends StatelessWidget {
             child: Text(card.name,
                 style: Theme.of(context).textTheme.bodyLarge),
           ),
+          if (price != null)
+            Padding(
+              padding: const EdgeInsets.only(right: 4),
+              child: Text(
+                '${price!.toStringAsFixed(2)}\u20AC',
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.4),
+                  fontSize: 12,
+                ),
+              ),
+            ),
           IconButton(
             icon: const Icon(Icons.remove_circle_outline, size: 20),
             color: Colors.white38,
@@ -615,9 +707,14 @@ class _CardRow extends StatelessWidget {
 
 class _CardImageTile extends StatelessWidget {
   final DeckCard card;
+  final double? price;
   final VoidCallback onTap;
 
-  const _CardImageTile({required this.card, required this.onTap});
+  const _CardImageTile({
+    required this.card,
+    this.price,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -673,6 +770,27 @@ class _CardImageTile extends StatelessWidget {
                     color: Colors.white,
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+          if (price != null)
+            Positioned(
+              bottom: 4,
+              left: 4,
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.75),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text(
+                  '${price!.toStringAsFixed(2)}\u20AC',
+                  style: const TextStyle(
+                    color: Colors.white70,
+                    fontSize: 9,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ),

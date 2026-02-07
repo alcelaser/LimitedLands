@@ -11,6 +11,8 @@ import '../widgets/dice_dialog.dart';
 import '../widgets/high_roll_dialog.dart';
 import '../widgets/planechase_overlay.dart';
 
+import '../providers/planechase_provider.dart';
+
 class LifeCounterGameScreen extends ConsumerStatefulWidget {
   const LifeCounterGameScreen({super.key});
 
@@ -42,13 +44,27 @@ class _LifeCounterGameScreenState
     showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Exit Game?'),
+        title: const Text('Leave Game'),
         content: const Text(
-            'Your game will be saved. You can resume it later from the setup screen.'),
+            'Save your game to resume later, or end it permanently.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
             child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(ctx).pop();
+              HapticFeedback.heavyImpact();
+              ref.read(gameProvider.notifier).endGame();
+              ref.read(gameTimerProvider.notifier).reset();
+              if (ref.read(gameProvider).config.planechaseEnabled) {
+                ref.read(planechaseProvider.notifier).reset();
+              }
+              context.pop();
+            },
+            child: Text('End Game',
+                style: TextStyle(color: Colors.red.shade300)),
           ),
           FilledButton(
             onPressed: () {
@@ -56,7 +72,7 @@ class _LifeCounterGameScreenState
               ref.read(gameTimerProvider.notifier).pause();
               context.pop();
             },
-            child: const Text('Exit'),
+            child: const Text('Save & Exit'),
           ),
         ],
       ),

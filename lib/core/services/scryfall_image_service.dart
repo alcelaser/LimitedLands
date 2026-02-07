@@ -59,4 +59,61 @@ class ScryfallImageService {
       return null;
     }
   }
+
+  /// Fetches EUR prices for a list of card names using Scryfall collection API.
+  /// Returns a map of card name (lowercase) -> EUR price.
+  /// Batches requests in groups of 75 (Scryfall limit).
+  static Future<Map<String, double?>> fetchPrices(
+      List<String> cardNames) async {
+    final prices = <String, double?>{};
+    if (cardNames.isEmpty) return prices;
+
+    // Deduplicate
+    final unique = cardNames.toSet().toList();
+
+    // Batch in groups of 75
+    for (int i = 0; i < unique.length; i += 75) {
+      final batch = unique.sublist(
+          i, i + 75 > unique.length ? unique.length : i + 75);
+      final identifiers =
+          batch.map((name) => {'name': name}).toList();
+
+      try {
+        final url =
+            Uri.parse('https://api.scryfall.com/cards/collection');
+        final response = await http.post(
+          url,
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+          body: jsonEncode({'identifiers': identifiers}),
+        );
+        if (response.statusCode == 200) {
+          final body =
+              jsonDecode(response.body) as Map<String, dynamic>;
+          final data = body['data'] as List<dynamic>? ?? [];
+          for (final card in data) {
+            final cardMap = card as Map<String, dynamic>;
+            final name = cardMap['name'] as String?;
+            final pricesMap =
+                cardMap['prices'] as Map<String, dynamic>?;
+            if (name != null && pricesMap != null) {
+              final eur = pricesMap['eur'] as String?;
+              prices[name.toLowerCase()] =
+                  eur != null ? double.tryParse(eur) : null;
+            }
+          }
+        }
+      } catch (_) {
+        // Skip failed batch
+      }
+
+      // Respect Scryfall rate limit (100ms between requests)
+      if (i + 75 < unique.length) {
+        await Future.delayed(const Duration(milliseconds: 100));
+      }
+    }
+    return prices;
+  }
 }
