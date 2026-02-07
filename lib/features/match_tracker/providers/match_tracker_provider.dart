@@ -209,8 +209,23 @@ class MatchTrackerNotifier extends StateNotifier<MatchTrackerState> {
     _saveToStorage();
   }
 
-  MatchRecord addMatch(String eventId) {
-    final event = state.events.firstWhere((e) => e.id == eventId);
+  Event? _findEvent(String id) {
+    for (final e in state.events) {
+      if (e.id == id) return e;
+    }
+    return null;
+  }
+
+  MatchRecord? _findMatch(Event event, String matchId) {
+    for (final m in event.matches) {
+      if (m.id == matchId) return m;
+    }
+    return null;
+  }
+
+  MatchRecord? addMatch(String eventId) {
+    final event = _findEvent(eventId);
+    if (event == null) return null;
     final match = MatchRecord(
       id: 'match_${_nextMatchId++}',
       roundNumber: event.matches.length + 1,
@@ -220,7 +235,8 @@ class MatchTrackerNotifier extends StateNotifier<MatchTrackerState> {
   }
 
   void updateMatch(String eventId, MatchRecord updated) {
-    final event = state.events.firstWhere((e) => e.id == eventId);
+    final event = _findEvent(eventId);
+    if (event == null) return;
     final newMatches = event.matches
         .map((m) => m.id == updated.id ? updated : m)
         .toList();
@@ -228,7 +244,8 @@ class MatchTrackerNotifier extends StateNotifier<MatchTrackerState> {
   }
 
   void removeMatch(String eventId, String matchId) {
-    final event = state.events.firstWhere((e) => e.id == eventId);
+    final event = _findEvent(eventId);
+    if (event == null) return;
     final newMatches = event.matches.where((m) => m.id != matchId).toList();
     // Re-number rounds
     final renumbered = List.generate(
@@ -246,22 +263,26 @@ class MatchTrackerNotifier extends StateNotifier<MatchTrackerState> {
   }
 
   void recordGameWin(String eventId, String matchId) {
-    final event = state.events.firstWhere((e) => e.id == eventId);
-    final match = event.matches.firstWhere((m) => m.id == matchId);
-    if (match.isComplete) return;
+    final event = _findEvent(eventId);
+    if (event == null) return;
+    final match = _findMatch(event, matchId);
+    if (match == null || match.isComplete) return;
     updateMatch(eventId, match.copyWith(gamesWon: match.gamesWon + 1));
   }
 
   void recordGameLoss(String eventId, String matchId) {
-    final event = state.events.firstWhere((e) => e.id == eventId);
-    final match = event.matches.firstWhere((m) => m.id == matchId);
-    if (match.isComplete) return;
+    final event = _findEvent(eventId);
+    if (event == null) return;
+    final match = _findMatch(event, matchId);
+    if (match == null || match.isComplete) return;
     updateMatch(eventId, match.copyWith(gamesLost: match.gamesLost + 1));
   }
 
   void toggleDraw(String eventId, String matchId) {
-    final event = state.events.firstWhere((e) => e.id == eventId);
-    final match = event.matches.firstWhere((m) => m.id == matchId);
+    final event = _findEvent(eventId);
+    if (event == null) return;
+    final match = _findMatch(event, matchId);
+    if (match == null) return;
     updateMatch(eventId, match.copyWith(
       isDraw: !match.isDraw,
       gamesWon: 0,
@@ -270,8 +291,10 @@ class MatchTrackerNotifier extends StateNotifier<MatchTrackerState> {
   }
 
   void resetMatch(String eventId, String matchId) {
-    final event = state.events.firstWhere((e) => e.id == eventId);
-    final match = event.matches.firstWhere((m) => m.id == matchId);
+    final event = _findEvent(eventId);
+    if (event == null) return;
+    final match = _findMatch(event, matchId);
+    if (match == null) return;
     updateMatch(eventId, match.copyWith(
       gamesWon: 0,
       gamesLost: 0,

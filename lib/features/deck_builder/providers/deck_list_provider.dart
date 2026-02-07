@@ -165,8 +165,16 @@ class DeckListNotifier extends StateNotifier<DeckListState> {
     _saveToStorage();
   }
 
+  Deck? _findDeck(String id) {
+    for (final d in state.decks) {
+      if (d.id == id) return d;
+    }
+    return null;
+  }
+
   void addCardToMainboard(String deckId, String cardName) {
-    final deck = state.decks.firstWhere((d) => d.id == deckId);
+    final deck = _findDeck(deckId);
+    if (deck == null) return;
     final existing = deck.mainboard.indexWhere(
         (c) => c.name.toLowerCase() == cardName.toLowerCase());
     List<DeckCard> newMainboard;
@@ -181,7 +189,8 @@ class DeckListNotifier extends StateNotifier<DeckListState> {
   }
 
   void addCardToSideboard(String deckId, String cardName) {
-    final deck = state.decks.firstWhere((d) => d.id == deckId);
+    final deck = _findDeck(deckId);
+    if (deck == null) return;
     final existing = deck.sideboard.indexWhere(
         (c) => c.name.toLowerCase() == cardName.toLowerCase());
     List<DeckCard> newSideboard;
@@ -196,7 +205,8 @@ class DeckListNotifier extends StateNotifier<DeckListState> {
   }
 
   void removeCardFromMainboard(String deckId, int index) {
-    final deck = state.decks.firstWhere((d) => d.id == deckId);
+    final deck = _findDeck(deckId);
+    if (deck == null) return;
     final card = deck.mainboard[index];
     List<DeckCard> newMainboard = List.from(deck.mainboard);
     if (card.quantity > 1) {
@@ -208,7 +218,8 @@ class DeckListNotifier extends StateNotifier<DeckListState> {
   }
 
   void removeCardFromSideboard(String deckId, int index) {
-    final deck = state.decks.firstWhere((d) => d.id == deckId);
+    final deck = _findDeck(deckId);
+    if (deck == null) return;
     final card = deck.sideboard[index];
     List<DeckCard> newSideboard = List.from(deck.sideboard);
     if (card.quantity > 1) {

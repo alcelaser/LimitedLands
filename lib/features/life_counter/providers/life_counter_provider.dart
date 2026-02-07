@@ -50,13 +50,23 @@ class LifeCounterState {
 class LifeCounterNotifier extends StateNotifier<LifeCounterState> {
   LifeCounterNotifier() : super(const LifeCounterState());
 
+  static const _maxHistory = 100;
+
+  static List<int> _appendHistory(List<int> history, int delta) {
+    final newHistory = [...history, delta];
+    if (newHistory.length > _maxHistory) {
+      return newHistory.sublist(newHistory.length - _maxHistory);
+    }
+    return newHistory;
+  }
+
   void changeLife(int player, int delta) {
     if (player == 1) {
       final newLife = state.player1.life + delta;
       state = state.copyWith(
         player1: state.player1.copyWith(
           life: newLife,
-          history: [...state.player1.history, delta],
+          history: _appendHistory(state.player1.history, delta),
         ),
       );
     } else {
@@ -64,7 +74,7 @@ class LifeCounterNotifier extends StateNotifier<LifeCounterState> {
       state = state.copyWith(
         player2: state.player2.copyWith(
           life: newLife,
-          history: [...state.player2.history, delta],
+          history: _appendHistory(state.player2.history, delta),
         ),
       );
     }

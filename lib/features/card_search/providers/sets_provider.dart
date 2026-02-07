@@ -29,11 +29,13 @@ class SetsState {
   final List<MtgSet> sets;
   final bool isLoading;
   final bool hasFetched;
+  final String? error;
 
   const SetsState({
     this.sets = const [],
     this.isLoading = false,
     this.hasFetched = false,
+    this.error,
   });
 }
 
@@ -79,10 +81,10 @@ class SetsNotifier extends StateNotifier<SetsState> {
 
         state = SetsState(sets: rawSets, hasFetched: true);
       } else {
-        state = const SetsState(hasFetched: true);
+        state = const SetsState(error: 'Failed to load sets');
       }
     } catch (_) {
-      state = const SetsState(hasFetched: true);
+      state = const SetsState(error: 'Network error loading sets');
     }
   }
 

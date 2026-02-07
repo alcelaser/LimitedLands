@@ -55,7 +55,7 @@ class CardSearchState {
   final String sortBy;
   final bool sortAscending;
 
-  const CardSearchState({
+  CardSearchState({
     this.expansion = 'FDN',
     this.format = 'PremierDraft',
     this.allCards = const [],
@@ -66,7 +66,9 @@ class CardSearchState {
     this.sortAscending = false,
   });
 
-  List<CardRating> get filteredCards {
+  late final List<CardRating> filteredCards = _computeFilteredCards();
+
+  List<CardRating> _computeFilteredCards() {
     var cards = allCards.where((c) {
       if (searchQuery.isEmpty) return true;
       return c.name.toLowerCase().contains(searchQuery.toLowerCase());
@@ -100,6 +102,7 @@ class CardSearchState {
     String? searchQuery,
     bool? isLoading,
     String? error,
+    bool clearError = false,
     String? sortBy,
     bool? sortAscending,
   }) {
@@ -109,7 +112,7 @@ class CardSearchState {
       allCards: allCards ?? this.allCards,
       searchQuery: searchQuery ?? this.searchQuery,
       isLoading: isLoading ?? this.isLoading,
-      error: error ?? this.error,
+      error: clearError ? null : (error ?? this.error),
       sortBy: sortBy ?? this.sortBy,
       sortAscending: sortAscending ?? this.sortAscending,
     );
@@ -117,7 +120,7 @@ class CardSearchState {
 }
 
 class CardSearchNotifier extends StateNotifier<CardSearchState> {
-  CardSearchNotifier() : super(const CardSearchState());
+  CardSearchNotifier() : super(CardSearchState());
 
   void setExpansion(String expansion) {
     state = state.copyWith(expansion: expansion.toUpperCase());
@@ -148,7 +151,7 @@ class CardSearchNotifier extends StateNotifier<CardSearchState> {
       return;
     }
 
-    state = state.copyWith(isLoading: true, error: null);
+    state = state.copyWith(isLoading: true, clearError: true);
 
     try {
       final url = Uri.parse(
@@ -177,6 +180,7 @@ class CardSearchNotifier extends StateNotifier<CardSearchState> {
           state = state.copyWith(
             isLoading: false,
             allCards: cards,
+            clearError: true,
           );
         }
       } else {

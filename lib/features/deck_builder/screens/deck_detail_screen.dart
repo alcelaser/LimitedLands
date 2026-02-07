@@ -15,11 +15,13 @@ class DeckDetailScreen extends ConsumerStatefulWidget {
 
 class _DeckDetailScreenState extends ConsumerState<DeckDetailScreen> {
   final _cardController = TextEditingController();
+  final _cardFocusNode = FocusNode();
   bool _addToSideboard = false;
 
   @override
   void dispose() {
     _cardController.dispose();
+    _cardFocusNode.dispose();
     super.dispose();
   }
 
@@ -91,7 +93,7 @@ class _DeckDetailScreenState extends ConsumerState<DeckDetailScreen> {
                 Expanded(
                   child: RawAutocomplete<String>(
                     textEditingController: _cardController,
-                    focusNode: FocusNode(),
+                    focusNode: _cardFocusNode,
                     optionsBuilder: (textEditingValue) {
                       final query = textEditingValue.text.trim();
                       ref
