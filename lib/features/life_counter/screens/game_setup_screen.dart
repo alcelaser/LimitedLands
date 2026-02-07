@@ -82,159 +82,196 @@ class GameSetupScreen extends ConsumerWidget {
           ],
 
           // Format selector
-          Text('Format', style: theme.textTheme.titleSmall),
-          const SizedBox(height: 8),
-          SegmentedButton<GameFormat>(
-            segments: const [
-              ButtonSegment(
-                value: GameFormat.standard,
-                label: Text('Standard'),
-                icon: Icon(Icons.person),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Format', style: theme.textTheme.titleMedium),
+                  const SizedBox(height: 12),
+                  SegmentedButton<GameFormat>(
+                    segments: const [
+                      ButtonSegment(
+                        value: GameFormat.standard,
+                        label: Text('Standard'),
+                        icon: Icon(Icons.person),
+                      ),
+                      ButtonSegment(
+                        value: GameFormat.commander,
+                        label: Text('Commander'),
+                        icon: Icon(Icons.shield),
+                      ),
+                      ButtonSegment(
+                        value: GameFormat.custom,
+                        label: Text('Custom'),
+                        icon: Icon(Icons.tune),
+                      ),
+                    ],
+                    selected: {config.format},
+                    onSelectionChanged: (selected) {
+                      HapticFeedback.lightImpact();
+                      ref.read(gameSetupProvider.notifier).setFormat(selected.first);
+                    },
+                  ),
+                ],
               ),
-              ButtonSegment(
-                value: GameFormat.commander,
-                label: Text('Commander'),
-                icon: Icon(Icons.shield),
-              ),
-              ButtonSegment(
-                value: GameFormat.custom,
-                label: Text('Custom'),
-                icon: Icon(Icons.tune),
-              ),
-            ],
-            selected: {config.format},
-            onSelectionChanged: (selected) {
-              HapticFeedback.lightImpact();
-              ref.read(gameSetupProvider.notifier).setFormat(selected.first);
-            },
+            ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 28),
 
           // Player count
-          Text('Players', style: theme.textTheme.titleSmall),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              IconButton.filled(
-                onPressed: config.playerCount > MtgConstants.minPlayers
-                    ? () {
-                        HapticFeedback.lightImpact();
-                        ref
-                            .read(gameSetupProvider.notifier)
-                            .setPlayerCount(config.playerCount - 1);
-                      }
-                    : null,
-                icon: const Icon(Icons.remove),
-              ),
-              Expanded(
-                child: Center(
-                  child: Text(
-                    '${config.playerCount}',
-                    style: theme.textTheme.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Players', style: theme.textTheme.titleMedium),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      IconButton.filled(
+                        onPressed: config.playerCount > MtgConstants.minPlayers
+                            ? () {
+                                HapticFeedback.lightImpact();
+                                ref
+                                    .read(gameSetupProvider.notifier)
+                                    .setPlayerCount(config.playerCount - 1);
+                              }
+                            : null,
+                        icon: const Icon(Icons.remove),
+                      ),
+                      Expanded(
+                        child: Center(
+                          child: Text(
+                            '${config.playerCount}',
+                            style: theme.textTheme.headlineMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                      IconButton.filled(
+                        onPressed: config.playerCount < MtgConstants.maxPlayers
+                            ? () {
+                                HapticFeedback.lightImpact();
+                                ref
+                                    .read(gameSetupProvider.notifier)
+                                    .setPlayerCount(config.playerCount + 1);
+                              }
+                            : null,
+                        icon: const Icon(Icons.add),
+                      ),
+                    ],
                   ),
-                ),
+                ],
               ),
-              IconButton.filled(
-                onPressed: config.playerCount < MtgConstants.maxPlayers
-                    ? () {
-                        HapticFeedback.lightImpact();
-                        ref
-                            .read(gameSetupProvider.notifier)
-                            .setPlayerCount(config.playerCount + 1);
-                      }
-                    : null,
-                icon: const Icon(Icons.add),
-              ),
-            ],
+            ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 28),
 
           // Starting life
-          Text('Starting Life', style: theme.textTheme.titleSmall),
-          const SizedBox(height: 8),
-          if (config.format == GameFormat.custom) ...[
-            Row(
-              children: [
-                IconButton.filled(
-                  onPressed: config.startingLife > 1
-                      ? () {
-                          HapticFeedback.lightImpact();
-                          ref
-                              .read(gameSetupProvider.notifier)
-                              .setStartingLife(config.startingLife - 1);
-                        }
-                      : null,
-                  icon: const Icon(Icons.remove),
-                ),
-                Expanded(
-                  child: Center(
-                    child: Text(
-                      '${config.startingLife}',
-                      style: theme.textTheme.headlineMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Starting Life', style: theme.textTheme.titleMedium),
+                  const SizedBox(height: 12),
+                  if (config.format == GameFormat.custom) ...[
+                    Row(
+                      children: [
+                        IconButton.filled(
+                          onPressed: config.startingLife > 1
+                              ? () {
+                                  HapticFeedback.lightImpact();
+                                  ref
+                                      .read(gameSetupProvider.notifier)
+                                      .setStartingLife(config.startingLife - 1);
+                                }
+                              : null,
+                          icon: const Icon(Icons.remove),
+                        ),
+                        Expanded(
+                          child: Center(
+                            child: Text(
+                              '${config.startingLife}',
+                              style: theme.textTheme.headlineMedium?.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                        IconButton.filled(
+                          onPressed: () {
+                            HapticFeedback.lightImpact();
+                            ref
+                                .read(gameSetupProvider.notifier)
+                                .setStartingLife(config.startingLife + 1);
+                          },
+                          icon: const Icon(Icons.add),
+                        ),
+                      ],
+                    ),
+                  ] else ...[
+                    Center(
+                      child: Text(
+                        '${config.startingLife}',
+                        style: theme.textTheme.headlineMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
-                  ),
-                ),
-                IconButton.filled(
-                  onPressed: () {
-                    HapticFeedback.lightImpact();
-                    ref
-                        .read(gameSetupProvider.notifier)
-                        .setStartingLife(config.startingLife + 1);
-                  },
-                  icon: const Icon(Icons.add),
-                ),
-              ],
-            ),
-          ] else ...[
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Center(
-                  child: Text(
-                    '${config.startingLife}',
-                    style: theme.textTheme.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
+                  ],
+                ],
               ),
             ),
-          ],
-          const SizedBox(height: 24),
+          ),
+          const SizedBox(height: 28),
 
           // Options
-          Text('Options', style: theme.textTheme.titleSmall),
-          const SizedBox(height: 8),
-          if (config.format == GameFormat.commander) ...[
-            SwitchListTile(
-              title: const Text('Partner Commanders'),
-              subtitle:
-                  const Text('Track damage from two commanders per player'),
-              value: config.partnerEnabled,
-              onChanged: (_) {
-                HapticFeedback.lightImpact();
-                ref.read(gameSetupProvider.notifier).togglePartner();
-              },
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Text('Options', style: theme.textTheme.titleMedium),
+                  ),
+                  if (config.format == GameFormat.commander) ...[
+                    SwitchListTile(
+                      title: const Text('Partner Commanders'),
+                      subtitle:
+                          const Text('Track damage from two commanders per player'),
+                      value: config.partnerEnabled,
+                      onChanged: (_) {
+                        HapticFeedback.lightImpact();
+                        ref.read(gameSetupProvider.notifier).togglePartner();
+                      },
+                    ),
+                  ],
+                  SwitchListTile(
+                    title: const Text('Planechase'),
+                    subtitle: const Text('Include planar deck and die'),
+                    value: config.planechaseEnabled,
+                    onChanged: (_) {
+                      HapticFeedback.lightImpact();
+                      ref.read(gameSetupProvider.notifier).togglePlanechase();
+                    },
+                  ),
+                ],
+              ),
             ),
-          ],
-          SwitchListTile(
-            title: const Text('Planechase'),
-            subtitle: const Text('Include planar deck and die'),
-            value: config.planechaseEnabled,
-            onChanged: (_) {
-              HapticFeedback.lightImpact();
-              ref.read(gameSetupProvider.notifier).togglePlanechase();
-            },
           ),
-          const SizedBox(height: 32),
+          const SizedBox(height: 28),
 
           // Quick tools
-          Text('Quick Tools', style: theme.textTheme.titleSmall),
-          const SizedBox(height: 8),
+          Text('Quick Tools', style: theme.textTheme.titleMedium),
+          const SizedBox(height: 12),
           Row(
             children: [
               Expanded(
@@ -266,7 +303,7 @@ class GameSetupScreen extends ConsumerWidget {
               ),
             ],
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 28),
 
           // Start game button
           FilledButton.icon(
@@ -279,9 +316,12 @@ class GameSetupScreen extends ConsumerWidget {
             label: const Text('Start Game'),
             style: FilledButton.styleFrom(
               minimumSize: const Size.fromHeight(56),
-              textStyle: theme.textTheme.titleMedium,
+              textStyle: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
+          const SizedBox(height: 16),
         ],
       ),
     );

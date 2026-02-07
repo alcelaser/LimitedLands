@@ -28,10 +28,14 @@ class _LifeTapZoneState extends State<LifeTapZone> {
       onTapCancel: () => setState(() => _isPressed = false),
       onTap: widget.onTap,
       onLongPress: widget.onLongPress,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 100),
-        color: _isPressed ? Colors.white.withOpacity(0.08) : Colors.transparent,
-        child: Center(child: widget.child),
+      child: AnimatedScale(
+        scale: _isPressed ? 0.97 : 1.0,
+        duration: const Duration(milliseconds: 150),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          color: _isPressed ? Colors.white.withOpacity(0.15) : Colors.transparent,
+          child: Center(child: widget.child),
+        ),
       ),
     );
   }

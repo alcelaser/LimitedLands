@@ -70,9 +70,18 @@ class PlayerPanel extends ConsumerWidget {
           color: isDead ? backgroundColor.withOpacity(0.3) : backgroundColor,
           border: isActive
               ? Border.all(
-                  color: Colors.white.withOpacity(0.6),
-                  width: 2,
+                  color: Colors.white.withOpacity(0.5),
+                  width: 1.5,
                 )
+              : null,
+          boxShadow: isActive && !isDead
+              ? [
+                  BoxShadow(
+                    color: backgroundColor.withOpacity(0.4),
+                    blurRadius: 12,
+                    spreadRadius: -2,
+                  ),
+                ]
               : null,
         ),
         child: Stack(
@@ -85,10 +94,12 @@ class PlayerPanel extends ConsumerWidget {
                     decoration: BoxDecoration(
                       gradient: RadialGradient(
                         colors: [
-                          Colors.white.withOpacity(0.08),
+                          Colors.white.withOpacity(0.1),
+                          Colors.white.withOpacity(0.02),
                           Colors.transparent,
                         ],
-                        radius: 0.8,
+                        stops: const [0.0, 0.5, 1.0],
+                        radius: 0.9,
                       ),
                     ),
                   ),
@@ -99,7 +110,7 @@ class PlayerPanel extends ConsumerWidget {
               children: [
                 // Player name + mini counters row
                 Padding(
-                  padding: const EdgeInsets.only(top: 4, left: 6, right: 6),
+                  padding: const EdgeInsets.only(top: 4, left: 8, right: 8),
                   child: Row(
                     children: [
                       // Player name
@@ -107,9 +118,9 @@ class PlayerPanel extends ConsumerWidget {
                         child: Text(
                           player.name,
                           style: TextStyle(
-                            fontSize: 11,
+                            fontSize: 12,
                             fontWeight: FontWeight.w600,
-                            color: Colors.white.withOpacity(0.7),
+                            color: Colors.white.withOpacity(0.8),
                             letterSpacing: 0.5,
                           ),
                           overflow: TextOverflow.ellipsis,
@@ -212,7 +223,7 @@ class PlayerPanel extends ConsumerWidget {
                               padding: const EdgeInsets.only(left: 12),
                               child: Icon(
                                 Icons.remove_rounded,
-                                color: Colors.white.withOpacity(0.2),
+                                color: Colors.white.withOpacity(0.35),
                                 size: 28,
                               ),
                             ),
@@ -253,6 +264,12 @@ class PlayerPanel extends ConsumerWidget {
                               fontWeight: FontWeight.w200,
                               color: _lifeColor(),
                               height: 1,
+                              shadows: [
+                                Shadow(
+                                  color: Colors.black.withOpacity(0.3),
+                                  blurRadius: 8,
+                                ),
+                              ],
                             ),
                           ),
                         ),
@@ -278,7 +295,7 @@ class PlayerPanel extends ConsumerWidget {
                               padding: const EdgeInsets.only(right: 12),
                               child: Icon(
                                 Icons.add_rounded,
-                                color: Colors.white.withOpacity(0.2),
+                                color: Colors.white.withOpacity(0.35),
                                 size: 28,
                               ),
                             ),
@@ -294,12 +311,27 @@ class PlayerPanel extends ConsumerWidget {
             if (isDead)
               Positioned.fill(
                 child: Container(
-                  color: Colors.black.withOpacity(0.5),
-                  child: const Center(
-                    child: Icon(
-                      Icons.dangerous,
-                      color: Colors.white38,
-                      size: 48,
+                  color: Colors.black.withOpacity(0.55),
+                  child: Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.dangerous,
+                          color: Colors.white38,
+                          size: 40,
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'ELIMINATED',
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 2,
+                            color: Colors.white.withOpacity(0.25),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),

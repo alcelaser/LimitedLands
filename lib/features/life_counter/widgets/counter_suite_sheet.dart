@@ -32,7 +32,7 @@ class CounterSuiteSheet extends ConsumerWidget {
             children: [
               Center(
                 child: Container(
-                  width: 40,
+                  width: 48,
                   height: 4,
                   decoration: BoxDecoration(
                     color: Colors.white24,
@@ -138,9 +138,16 @@ class CounterSuiteSheet extends ConsumerWidget {
               ),
               const Divider(height: 24),
               // Mana pool
-              Text(
-                'Mana Pool',
-                style: Theme.of(context).textTheme.titleSmall,
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.03),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  'Mana Pool',
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
               ),
               const SizedBox(height: 8),
               Row(
@@ -176,9 +183,16 @@ class CounterSuiteSheet extends ConsumerWidget {
               ),
               const Divider(height: 24),
               // Custom counters
-              Text(
-                'Custom Counters',
-                style: Theme.of(context).textTheme.titleSmall,
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.03),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  'Custom Counters',
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
               ),
               const SizedBox(height: 8),
               for (final counter in player.customCounters)
@@ -292,7 +306,7 @@ class _CounterRow extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.remove, size: 20),
             onPressed: onDecrement,
-            constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+            constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
             padding: EdgeInsets.zero,
           ),
           SizedBox(
@@ -310,7 +324,7 @@ class _CounterRow extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.add, size: 20),
             onPressed: onIncrement,
-            constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+            constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
             padding: EdgeInsets.zero,
           ),
           if (onRemove != null)

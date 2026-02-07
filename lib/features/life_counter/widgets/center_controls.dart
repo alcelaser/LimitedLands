@@ -56,6 +56,13 @@ class CenterControls extends ConsumerWidget {
               color: Colors.black.withOpacity(0.7),
               borderRadius: BorderRadius.circular(24),
               border: Border.all(color: Colors.white12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.4),
+                  blurRadius: 8,
+                  spreadRadius: -2,
+                ),
+              ],
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -66,7 +73,7 @@ class CenterControls extends ConsumerWidget {
                   onPressed: onMenu,
                   tooltip: 'Menu',
                   constraints:
-                      const BoxConstraints(minWidth: 36, minHeight: 36),
+                      const BoxConstraints(minWidth: 40, minHeight: 40),
                   padding: EdgeInsets.zero,
                 ),
                 // Reset button
@@ -76,7 +83,7 @@ class CenterControls extends ConsumerWidget {
                   onPressed: onReset,
                   tooltip: 'Reset',
                   constraints:
-                      const BoxConstraints(minWidth: 36, minHeight: 36),
+                      const BoxConstraints(minWidth: 40, minHeight: 40),
                   padding: EdgeInsets.zero,
                 ),
                 // Dice button
@@ -87,7 +94,7 @@ class CenterControls extends ConsumerWidget {
                     onPressed: onDice,
                     tooltip: 'Dice',
                     constraints:
-                        const BoxConstraints(minWidth: 36, minHeight: 36),
+                        const BoxConstraints(minWidth: 40, minHeight: 40),
                     padding: EdgeInsets.zero,
                   ),
                 // Turn counter
@@ -102,7 +109,7 @@ class CenterControls extends ConsumerWidget {
                     'T$turnNumber',
                     style: const TextStyle(
                       color: Colors.white70,
-                      fontSize: 14,
+                      fontSize: 15,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -114,15 +121,16 @@ class CenterControls extends ConsumerWidget {
                   onPressed: onNextTurn,
                   tooltip: 'Next Turn',
                   constraints:
-                      const BoxConstraints(minWidth: 36, minHeight: 36),
+                      const BoxConstraints(minWidth: 40, minHeight: 40),
                   padding: EdgeInsets.zero,
                 ),
               ],
             ),
           ),
           const SizedBox(height: 4),
-          // Timer row
-          Container(
+          // Timer row (only visible when timer has been used)
+          if (timerState.isRunning || timerState.elapsed > Duration.zero)
+            Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
             decoration: BoxDecoration(
               color: Colors.black.withOpacity(0.5),

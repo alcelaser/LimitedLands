@@ -32,12 +32,21 @@ class MiniCounter extends StatelessWidget {
           border: Border.all(
             color: value > 0 ? color.withOpacity(0.4) : Colors.white12,
           ),
+          boxShadow: value > 0
+              ? [
+                  BoxShadow(
+                    color: color.withOpacity(0.2),
+                    blurRadius: 4,
+                    spreadRadius: -1,
+                  ),
+                ]
+              : null,
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(icon, size: 14, color: value > 0 ? color : Colors.white38),
-            const SizedBox(width: 4),
+            const SizedBox(width: 5),
             Text(
               '$value',
               style: TextStyle(

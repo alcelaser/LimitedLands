@@ -117,20 +117,27 @@ class PlayerGrid extends StatelessWidget {
       );
     }
 
-    return Column(
-      children: [
-        for (int r = 0; r < config.rows; r++)
-          Expanded(
-            child: Row(
-              children: [
-                for (int c = 0; c < config.cols; c++)
-                  Expanded(
-                    child: grid[r][c] ?? const SizedBox.expand(),
-                  ),
-              ],
+    return Container(
+      color: Colors.black,
+      child: Column(
+        children: [
+          for (int r = 0; r < config.rows; r++) ...[
+            if (r > 0) const SizedBox(height: 1), // thin row divider
+            Expanded(
+              child: Row(
+                children: [
+                  for (int c = 0; c < config.cols; c++) ...[
+                    if (c > 0) const SizedBox(width: 1), // thin col divider
+                    Expanded(
+                      child: grid[r][c] ?? const SizedBox.expand(),
+                    ),
+                  ],
+                ],
+              ),
             ),
-          ),
-      ],
+          ],
+        ],
+      ),
     );
   }
 }
