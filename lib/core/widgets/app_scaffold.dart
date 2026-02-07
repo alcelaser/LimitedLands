@@ -44,9 +44,9 @@ class AppScaffold extends StatelessWidget {
             label: 'Mana',
           ),
           NavigationDestination(
-            icon: Icon(Icons.scoreboard_outlined),
-            selectedIcon: Icon(Icons.scoreboard),
-            label: 'Matches',
+            icon: Icon(Icons.emoji_events_outlined),
+            selectedIcon: Icon(Icons.emoji_events),
+            label: 'Events',
           ),
           NavigationDestination(
             icon: Icon(Icons.style_outlined),
