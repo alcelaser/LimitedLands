@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/deck_list_provider.dart';
+import '../providers/scryfall_provider.dart';
 
 class DeckDetailScreen extends ConsumerStatefulWidget {
   final String deckId;
@@ -22,23 +23,25 @@ class _DeckDetailScreenState extends ConsumerState<DeckDetailScreen> {
     super.dispose();
   }
 
-  void _addCard() {
-    final name = _cardController.text.trim();
-    if (name.isEmpty) return;
+  void _addCardByName(String name) {
+    final trimmed = name.trim();
+    if (trimmed.isEmpty) return;
 
     HapticFeedback.lightImpact();
     final notifier = ref.read(deckListProvider.notifier);
     if (_addToSideboard) {
-      notifier.addCardToSideboard(widget.deckId, name);
+      notifier.addCardToSideboard(widget.deckId, trimmed);
     } else {
-      notifier.addCardToMainboard(widget.deckId, name);
+      notifier.addCardToMainboard(widget.deckId, trimmed);
     }
     _cardController.clear();
+    ref.read(scryfallAutocompleteProvider.notifier).clear();
   }
 
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(deckListProvider);
+    final autocompleteState = ref.watch(scryfallAutocompleteProvider);
     final deck =
         state.decks.where((d) => d.id == widget.deckId).firstOrNull;
 
@@ -66,37 +69,94 @@ class _DeckDetailScreenState extends ConsumerState<DeckDetailScreen> {
         ),
         actions: [
           PopupMenuButton<String>(
-            onSelected: (value) {
-              if (value == 'export') _showExportDialog(context, deck);
-            },
-            itemBuilder: (context) => [
-              const PopupMenuItem(
-                  value: 'export', child: Text('Export as text')),
+            onSelected: (value) => _exportDeck(context, deck, value),
+            itemBuilder: (context) => const [
+              PopupMenuItem(
+                  value: 'mtgo', child: Text('Export MTGO/Arena')),
+              PopupMenuItem(
+                  value: 'csv', child: Text('Export CSV')),
+              PopupMenuItem(
+                  value: 'text', child: Text('Export Text')),
             ],
           ),
         ],
       ),
       body: Column(
         children: [
-          // Add card input
+          // Add card input with autocomplete
           Padding(
             padding: const EdgeInsets.all(16),
             child: Row(
               children: [
                 Expanded(
-                  child: TextField(
-                    controller: _cardController,
-                    decoration: InputDecoration(
-                      hintText: 'Card name...',
-                      border: const OutlineInputBorder(),
-                      contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 12),
-                      suffixIcon: IconButton(
-                        icon: const Icon(Icons.add),
-                        onPressed: _addCard,
-                      ),
-                    ),
-                    onSubmitted: (_) => _addCard(),
+                  child: RawAutocomplete<String>(
+                    textEditingController: _cardController,
+                    focusNode: FocusNode(),
+                    optionsBuilder: (textEditingValue) {
+                      final query = textEditingValue.text.trim();
+                      ref
+                          .read(scryfallAutocompleteProvider.notifier)
+                          .search(query);
+                      if (query.length < 2) return const [];
+                      return autocompleteState.suggestions;
+                    },
+                    onSelected: (selection) {
+                      _addCardByName(selection);
+                    },
+                    fieldViewBuilder: (context, controller, focusNode,
+                        onFieldSubmitted) {
+                      return TextField(
+                        controller: controller,
+                        focusNode: focusNode,
+                        decoration: InputDecoration(
+                          hintText: 'Card name...',
+                          border: const OutlineInputBorder(),
+                          contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 12),
+                          suffixIcon: IconButton(
+                            icon: const Icon(Icons.add),
+                            onPressed: () =>
+                                _addCardByName(controller.text),
+                          ),
+                        ),
+                        onSubmitted: (_) =>
+                            _addCardByName(controller.text),
+                      );
+                    },
+                    optionsViewBuilder: (context, onSelected, options) {
+                      return Align(
+                        alignment: Alignment.topLeft,
+                        child: Material(
+                          elevation: 4,
+                          borderRadius: BorderRadius.circular(8),
+                          color: const Color(0xFF252540),
+                          child: ConstrainedBox(
+                            constraints: const BoxConstraints(
+                                maxHeight: 240, maxWidth: 400),
+                            child: ListView.builder(
+                              padding: EdgeInsets.zero,
+                              shrinkWrap: true,
+                              itemCount: options.length,
+                              itemBuilder: (context, index) {
+                                final option = options.elementAt(index);
+                                return InkWell(
+                                  onTap: () => onSelected(option),
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 16, vertical: 10),
+                                    child: Text(
+                                      option,
+                                      style: const TextStyle(
+                                          color: Colors.white),
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ),
+                      );
+                    },
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -226,7 +286,58 @@ class _DeckDetailScreenState extends ConsumerState<DeckDetailScreen> {
     );
   }
 
-  void _showExportDialog(BuildContext context, Deck deck) {
+  void _exportDeck(BuildContext context, Deck deck, String format) {
+    final String text;
+    final String label;
+
+    switch (format) {
+      case 'mtgo':
+        text = _exportMtgo(deck);
+        label = 'MTGO/Arena deck list copied';
+        break;
+      case 'csv':
+        text = _exportCsv(deck);
+        label = 'CSV deck list copied';
+        break;
+      default:
+        text = _exportText(deck);
+        label = 'Deck list copied';
+    }
+
+    Clipboard.setData(ClipboardData(text: text));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(label)),
+    );
+  }
+
+  String _exportMtgo(Deck deck) {
+    final buffer = StringBuffer();
+    for (final card in deck.mainboard) {
+      buffer.writeln('${card.quantity} ${card.name}');
+    }
+    if (deck.sideboard.isNotEmpty) {
+      buffer.writeln('');
+      buffer.writeln('Sideboard');
+      for (final card in deck.sideboard) {
+        buffer.writeln('${card.quantity} ${card.name}');
+      }
+    }
+    return buffer.toString();
+  }
+
+  String _exportCsv(Deck deck) {
+    final buffer = StringBuffer();
+    buffer.writeln('Quantity,Name,Board');
+    for (final card in deck.mainboard) {
+      buffer.writeln('${card.quantity},${card.name},Mainboard');
+    }
+    for (final card in deck.sideboard) {
+      buffer.writeln('${card.quantity},${card.name},Sideboard');
+    }
+    return buffer.toString();
+  }
+
+  String _exportText(Deck deck) {
     final buffer = StringBuffer();
     buffer.writeln('// ${deck.name} (${deck.format})');
     buffer.writeln('// Mainboard (${deck.mainboardCount})');
@@ -240,11 +351,7 @@ class _DeckDetailScreenState extends ConsumerState<DeckDetailScreen> {
         buffer.writeln('${card.quantity} ${card.name}');
       }
     }
-    final text = buffer.toString();
-    Clipboard.setData(ClipboardData(text: text));
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Deck list copied to clipboard')),
-    );
+    return buffer.toString();
   }
 }
 

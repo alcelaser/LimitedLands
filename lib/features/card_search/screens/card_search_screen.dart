@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/card_search_provider.dart';
+import '../providers/sets_provider.dart';
 
 class CardSearchScreen extends ConsumerStatefulWidget {
   const CardSearchScreen({super.key});
@@ -13,18 +14,24 @@ class CardSearchScreen extends ConsumerStatefulWidget {
 class _CardSearchScreenState extends ConsumerState<CardSearchScreen> {
   late TextEditingController _setController;
   late TextEditingController _searchController;
+  final _setFocusNode = FocusNode();
 
   @override
   void initState() {
     super.initState();
     _setController = TextEditingController(text: 'FDN');
     _searchController = TextEditingController();
+    // Fetch sets list on first load
+    Future.microtask(() {
+      ref.read(setsProvider.notifier).fetchSets();
+    });
   }
 
   @override
   void dispose() {
     _setController.dispose();
     _searchController.dispose();
+    _setFocusNode.dispose();
     super.dispose();
   }
 
@@ -46,20 +53,79 @@ class _CardSearchScreenState extends ConsumerState<CardSearchScreen> {
               children: [
                 Row(
                   children: [
-                    // Set code input
+                    // Set code input with autocomplete
                     SizedBox(
-                      width: 80,
-                      child: TextField(
-                        controller: _setController,
-                        decoration: const InputDecoration(
-                          labelText: 'Set',
-                          hintText: 'FDN',
-                          border: OutlineInputBorder(),
-                          contentPadding: EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 12),
-                        ),
-                        textCapitalization: TextCapitalization.characters,
-                        onChanged: notifier.setExpansion,
+                      width: 120,
+                      child: RawAutocomplete<MtgSet>(
+                        textEditingController: _setController,
+                        focusNode: _setFocusNode,
+                        displayStringForOption: (s) => s.code,
+                        optionsBuilder: (textEditingValue) {
+                          final query = textEditingValue.text.trim();
+                          return ref
+                              .read(setsProvider.notifier)
+                              .search(query);
+                        },
+                        onSelected: (s) {
+                          notifier.setExpansion(s.code);
+                        },
+                        fieldViewBuilder: (context, controller, focusNode,
+                            onFieldSubmitted) {
+                          return TextField(
+                            controller: controller,
+                            focusNode: focusNode,
+                            decoration: const InputDecoration(
+                              labelText: 'Set',
+                              hintText: 'FDN',
+                              border: OutlineInputBorder(),
+                              contentPadding: EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 12),
+                            ),
+                            textCapitalization:
+                                TextCapitalization.characters,
+                            onChanged: notifier.setExpansion,
+                          );
+                        },
+                        optionsViewBuilder:
+                            (context, onSelected, options) {
+                          return Align(
+                            alignment: Alignment.topLeft,
+                            child: Material(
+                              elevation: 4,
+                              borderRadius: BorderRadius.circular(8),
+                              color: const Color(0xFF252540),
+                              child: ConstrainedBox(
+                                constraints: const BoxConstraints(
+                                    maxHeight: 300, maxWidth: 300),
+                                child: ListView.builder(
+                                  padding: EdgeInsets.zero,
+                                  shrinkWrap: true,
+                                  itemCount: options.length,
+                                  itemBuilder: (context, index) {
+                                    final set =
+                                        options.elementAt(index);
+                                    return InkWell(
+                                      onTap: () => onSelected(set),
+                                      child: Padding(
+                                        padding:
+                                            const EdgeInsets.symmetric(
+                                                horizontal: 12,
+                                                vertical: 10),
+                                        child: Text(
+                                          '${set.code} - ${set.name}',
+                                          style: const TextStyle(
+                                              color: Colors.white),
+                                          overflow:
+                                              TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                            ),
+                          );
+                        },
                       ),
                     ),
                     const SizedBox(width: 8),
