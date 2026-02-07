@@ -1,7 +1,8 @@
 import 'package:go_router/go_router.dart';
 import '../widgets/app_scaffold.dart';
 import '../../features/mana_calculator/presentation/screens/mana_calculator_screen.dart';
-import '../../features/life_counter/screens/life_counter_screen.dart';
+import '../../features/life_counter/screens/game_setup_screen.dart';
+import '../../features/life_counter/screens/life_counter_game_screen.dart';
 import '../../features/deck_builder/screens/deck_list_screen.dart';
 import '../../features/match_tracker/screens/events_home_screen.dart';
 import '../../features/card_search/screens/card_search_screen.dart';
@@ -13,6 +14,12 @@ class AppRouter {
   static final router = GoRouter(
     initialLocation: '/${RouteNames.calculator}',
     routes: [
+      // Full-screen game route (outside ShellRoute, no bottom nav)
+      GoRoute(
+        path: '/game',
+        name: RouteNames.lifeCounterGame,
+        builder: (context, state) => const LifeCounterGameScreen(),
+      ),
       ShellRoute(
         builder: (context, state, child) => AppScaffold(child: child),
         routes: [
@@ -34,7 +41,7 @@ class AppRouter {
           GoRoute(
             path: '/${RouteNames.lifeCounter}',
             name: RouteNames.lifeCounter,
-            builder: (context, state) => const LifeCounterScreen(),
+            builder: (context, state) => const GameSetupScreen(),
           ),
           GoRoute(
             path: '/${RouteNames.cardSearch}',

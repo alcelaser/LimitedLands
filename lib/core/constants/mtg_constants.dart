@@ -44,4 +44,39 @@ class MtgConstants {
       'landCount': 24,
     },
   };
+
+  // ── Life Counter ──────────────────────────────────────────────────
+
+  // Starting life totals
+  static const int standardStartingLife = 20;
+  static const int commanderStartingLife = 40;
+
+  // Lethal thresholds
+  static const int poisonLethalThreshold = 10;
+  static const int commanderDamageLethal = 21;
+
+  // Limits
+  static const int maxPlayers = 10;
+  static const int minPlayers = 2;
+  static const int maxLifeHistory = 100;
+  static const int maxCounterValue = 999;
+  static const int maxPoisonValue = 99;
+  static const int maxCommanderTax = 99;
+
+  // Mana pool types (includes colorless)
+  static const List<String> manaPoolTypes = ['W', 'U', 'B', 'R', 'G', 'C'];
+
+  // Player color palette (ARGB hex values for serialization)
+  static const List<int> playerColors = [
+    0xFFE53935, // Red
+    0xFF1E88E5, // Blue
+    0xFF43A047, // Green
+    0xFFFDD835, // Yellow
+    0xFF8E24AA, // Purple
+    0xFFFF8F00, // Orange
+    0xFF00ACC1, // Cyan
+    0xFFD81B60, // Pink
+    0xFF5E35B1, // Deep Purple
+    0xFF00897B, // Teal
+  ];
 }

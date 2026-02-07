@@ -3,7 +3,8 @@ import 'package:limited_lands/features/deck_builder/providers/deck_list_provider
 import 'package:limited_lands/features/match_tracker/providers/match_tracker_provider.dart';
 import 'package:limited_lands/features/card_search/providers/card_search_provider.dart';
 import 'package:limited_lands/features/card_search/providers/sets_provider.dart';
-import 'package:limited_lands/features/life_counter/providers/life_counter_provider.dart';
+import 'package:limited_lands/features/life_counter/models/player_model.dart';
+import 'package:limited_lands/features/life_counter/models/game_state_model.dart';
 
 void main() {
   // ---------------------------------------------------------------------------
@@ -530,69 +531,160 @@ void main() {
   });
 
   // ---------------------------------------------------------------------------
-  // PlayerLife
+  // PlayerState & CustomCounter
   // ---------------------------------------------------------------------------
-  group('PlayerLife', () {
+  group('PlayerState', () {
     test('default values', () {
-      const player = PlayerLife();
+      const player = PlayerState(id: 'p_1');
 
+      expect(player.id, equals('p_1'));
+      expect(player.name, equals(''));
       expect(player.life, equals(20));
       expect(player.poison, equals(0));
       expect(player.experience, equals(0));
-      expect(player.history, isEmpty);
-    });
-
-    test('custom constructor values', () {
-      const player = PlayerLife(
-        life: 15,
-        poison: 3,
-        experience: 2,
-        history: [5, -2, -3],
-      );
-
-      expect(player.life, equals(15));
-      expect(player.poison, equals(3));
-      expect(player.experience, equals(2));
-      expect(player.history, equals([5, -2, -3]));
+      expect(player.energy, equals(0));
+      expect(player.stormCount, equals(0));
+      expect(player.commanderTax, equals(0));
+      expect(player.commanderDamageReceived, isEmpty);
+      expect(player.partnerDamageReceived, isEmpty);
+      expect(player.manaPool, isEmpty);
+      expect(player.customCounters, isEmpty);
+      expect(player.colorIndex, equals(0));
+      expect(player.isAlive, isTrue);
+      expect(player.lifeHistory, isEmpty);
     });
 
     test('copyWith changes specified fields only', () {
-      const original = PlayerLife(
+      const original = PlayerState(
+        id: 'p_1',
+        name: 'Alice',
         life: 20,
-        poison: 0,
-        experience: 0,
-        history: [1, -1],
+        poison: 3,
       );
 
-      final updated = original.copyWith(life: 17, poison: 2);
+      final updated = original.copyWith(life: 17, poison: 5);
 
+      expect(updated.id, equals('p_1'));
+      expect(updated.name, equals('Alice'));
       expect(updated.life, equals(17));
-      expect(updated.poison, equals(2));
+      expect(updated.poison, equals(5));
       expect(updated.experience, equals(0));
-      expect(updated.history, equals([1, -1]));
     });
 
-    test('copyWith with no arguments returns equivalent object', () {
-      const original = PlayerLife(
-        life: 18,
-        poison: 1,
-        experience: 5,
-        history: [3, -5],
+    test('toJson/fromJson round-trip', () {
+      const player = PlayerState(
+        id: 'p_1',
+        name: 'Bob',
+        life: 15,
+        poison: 3,
+        experience: 2,
+        energy: 5,
+        stormCount: 1,
+        commanderTax: 4,
+        colorIndex: 3,
+        isAlive: true,
+        lifeHistory: [5, -2, -3],
       );
 
-      final copy = original.copyWith();
+      final json = player.toJson();
+      final restored = PlayerState.fromJson(json);
 
-      expect(copy.life, equals(original.life));
-      expect(copy.poison, equals(original.poison));
-      expect(copy.experience, equals(original.experience));
-      expect(copy.history, equals(original.history));
+      expect(restored.id, equals('p_1'));
+      expect(restored.name, equals('Bob'));
+      expect(restored.life, equals(15));
+      expect(restored.poison, equals(3));
+      expect(restored.experience, equals(2));
+      expect(restored.energy, equals(5));
+      expect(restored.stormCount, equals(1));
+      expect(restored.commanderTax, equals(4));
+      expect(restored.colorIndex, equals(3));
+      expect(restored.isAlive, isTrue);
+      expect(restored.lifeHistory, equals([5, -2, -3]));
     });
 
-    test('copyWith replaces history', () {
-      const original = PlayerLife(history: [1, 2, 3]);
-      final updated = original.copyWith(history: [10, -5]);
+    test('lethalCommanderSource returns source at 21', () {
+      const player = PlayerState(
+        id: 'p_1',
+        commanderDamageReceived: {'p_2': 21},
+      );
 
-      expect(updated.history, equals([10, -5]));
+      expect(player.lethalCommanderSource, equals('p_2'));
+    });
+
+    test('lethalCommanderSource returns null below 21', () {
+      const player = PlayerState(
+        id: 'p_1',
+        commanderDamageReceived: {'p_2': 20},
+      );
+
+      expect(player.lethalCommanderSource, isNull);
+    });
+
+    test('isPoisonLethal at 10', () {
+      const player = PlayerState(id: 'p_1', poison: 10);
+      expect(player.isPoisonLethal, isTrue);
+    });
+
+    test('isPoisonLethal false at 9', () {
+      const player = PlayerState(id: 'p_1', poison: 9);
+      expect(player.isPoisonLethal, isFalse);
+    });
+  });
+
+  group('CustomCounter', () {
+    test('default value is 0', () {
+      const counter = CustomCounter(id: 'cc_1', label: 'Tokens');
+      expect(counter.value, equals(0));
+    });
+
+    test('toJson/fromJson round-trip', () {
+      const counter = CustomCounter(id: 'cc_1', label: 'Clues', value: 3);
+      final json = counter.toJson();
+      final restored = CustomCounter.fromJson(json);
+
+      expect(restored.id, equals('cc_1'));
+      expect(restored.label, equals('Clues'));
+      expect(restored.value, equals(3));
+    });
+
+    test('copyWith', () {
+      const counter = CustomCounter(id: 'cc_1', label: 'Tokens', value: 5);
+      final updated = counter.copyWith(value: 8);
+
+      expect(updated.id, equals('cc_1'));
+      expect(updated.label, equals('Tokens'));
+      expect(updated.value, equals(8));
+    });
+  });
+
+  group('GameConfig', () {
+    test('default values', () {
+      const config = GameConfig();
+
+      expect(config.playerCount, equals(2));
+      expect(config.startingLife, equals(20));
+      expect(config.format, equals(GameFormat.standard));
+      expect(config.planechaseEnabled, isFalse);
+      expect(config.partnerEnabled, isFalse);
+    });
+
+    test('toJson/fromJson round-trip', () {
+      const config = GameConfig(
+        playerCount: 4,
+        startingLife: 40,
+        format: GameFormat.commander,
+        planechaseEnabled: true,
+        partnerEnabled: true,
+      );
+
+      final json = config.toJson();
+      final restored = GameConfig.fromJson(json);
+
+      expect(restored.playerCount, equals(4));
+      expect(restored.startingLife, equals(40));
+      expect(restored.format, equals(GameFormat.commander));
+      expect(restored.planechaseEnabled, isTrue);
+      expect(restored.partnerEnabled, isTrue);
     });
   });
 }
