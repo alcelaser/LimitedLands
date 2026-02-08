@@ -66,6 +66,9 @@ class CubeCalculatorState {
   final List<CubeManaSource> paidManaSources;
   final List<CubeManaSource> fetchLands;
   final List<CubeManaSource> dualLands;
+  final List<CubeManaSource> shockLands;
+  final List<CubeManaSource> surveilLands;
+  final List<CubeManaSource> triomeLands;
   final List<CubeManaSource> utilityLands;
   final CubeRecommendation recommendation;
 
@@ -77,6 +80,9 @@ class CubeCalculatorState {
     this.paidManaSources = const [],
     this.fetchLands = const [],
     this.dualLands = const [],
+    this.shockLands = const [],
+    this.surveilLands = const [],
+    this.triomeLands = const [],
     this.utilityLands = const [],
     this.recommendation = const CubeRecommendation(),
   });
@@ -89,6 +95,9 @@ class CubeCalculatorState {
     List<CubeManaSource>? paidManaSources,
     List<CubeManaSource>? fetchLands,
     List<CubeManaSource>? dualLands,
+    List<CubeManaSource>? shockLands,
+    List<CubeManaSource>? surveilLands,
+    List<CubeManaSource>? triomeLands,
     List<CubeManaSource>? utilityLands,
     CubeRecommendation? recommendation,
   }) {
@@ -101,6 +110,9 @@ class CubeCalculatorState {
       paidManaSources: paidManaSources ?? this.paidManaSources,
       fetchLands: fetchLands ?? this.fetchLands,
       dualLands: dualLands ?? this.dualLands,
+      shockLands: shockLands ?? this.shockLands,
+      surveilLands: surveilLands ?? this.surveilLands,
+      triomeLands: triomeLands ?? this.triomeLands,
       utilityLands: utilityLands ?? this.utilityLands,
       recommendation: recommendation ?? this.recommendation,
     );
@@ -114,7 +126,7 @@ class CubeCalculatorState {
   int get landsNeeded =>
       (targetManaSourceCount - totalNonLandMana).clamp(0, targetManaSourceCount);
   int get totalNonbasicLands =>
-      [...fetchLands, ...dualLands, ...utilityLands]
+      [...fetchLands, ...dualLands, ...shockLands, ...surveilLands, ...triomeLands, ...utilityLands]
           .fold<int>(0, (sum, s) => sum + s.count);
   int get basicLandsNeeded =>
       (landsNeeded - totalNonbasicLands).clamp(0, landsNeeded);
@@ -216,6 +228,78 @@ List<CubeManaSource> defaultDualLands() => const [
           name: 'Tropical Island', type: 'land', colorsProduced: ['G', 'U']),
     ];
 
+// Default shock lands (Ravnica)
+List<CubeManaSource> defaultShockLands() => const [
+      CubeManaSource(
+          name: 'Hallowed Fountain', type: 'land', colorsProduced: ['W', 'U']),
+      CubeManaSource(
+          name: 'Watery Grave', type: 'land', colorsProduced: ['U', 'B']),
+      CubeManaSource(
+          name: 'Blood Crypt', type: 'land', colorsProduced: ['B', 'R']),
+      CubeManaSource(
+          name: 'Stomping Ground', type: 'land', colorsProduced: ['R', 'G']),
+      CubeManaSource(
+          name: 'Temple Garden', type: 'land', colorsProduced: ['G', 'W']),
+      CubeManaSource(
+          name: 'Godless Shrine', type: 'land', colorsProduced: ['W', 'B']),
+      CubeManaSource(
+          name: 'Steam Vents', type: 'land', colorsProduced: ['U', 'R']),
+      CubeManaSource(
+          name: 'Overgrown Tomb', type: 'land', colorsProduced: ['B', 'G']),
+      CubeManaSource(
+          name: 'Sacred Foundry', type: 'land', colorsProduced: ['R', 'W']),
+      CubeManaSource(
+          name: 'Breeding Pool', type: 'land', colorsProduced: ['G', 'U']),
+    ];
+
+// Default surveil lands (Murders at Karlov Manor)
+List<CubeManaSource> defaultSurveilLands() => const [
+      CubeManaSource(
+          name: 'Meticulous Archive', type: 'land', colorsProduced: ['W', 'U']),
+      CubeManaSource(
+          name: 'Undercity Sewers', type: 'land', colorsProduced: ['U', 'B']),
+      CubeManaSource(
+          name: 'Shadowy Backstreet', type: 'land', colorsProduced: ['B', 'R']),
+      CubeManaSource(
+          name: 'Raucous Theater', type: 'land', colorsProduced: ['R', 'G']),
+      CubeManaSource(
+          name: 'Lush Portico', type: 'land', colorsProduced: ['G', 'W']),
+      CubeManaSource(
+          name: 'Elegant Parlor', type: 'land', colorsProduced: ['W', 'B']),
+      CubeManaSource(
+          name: 'Commercial District', type: 'land', colorsProduced: ['U', 'R']),
+      CubeManaSource(
+          name: 'Underground Mortuary', type: 'land', colorsProduced: ['B', 'G']),
+      CubeManaSource(
+          name: 'Thundering Falls', type: 'land', colorsProduced: ['R', 'W']),
+      CubeManaSource(
+          name: 'Hedge Maze', type: 'land', colorsProduced: ['G', 'U']),
+    ];
+
+// Default triome lands (Ikoria + Streets of New Capenna)
+List<CubeManaSource> defaultTriomeLands() => const [
+      CubeManaSource(
+          name: 'Indatha Triome', type: 'land', colorsProduced: ['W', 'B', 'G']),
+      CubeManaSource(
+          name: 'Ketria Triome', type: 'land', colorsProduced: ['U', 'R', 'G']),
+      CubeManaSource(
+          name: 'Raugrin Triome', type: 'land', colorsProduced: ['U', 'R', 'W']),
+      CubeManaSource(
+          name: 'Savai Triome', type: 'land', colorsProduced: ['R', 'W', 'B']),
+      CubeManaSource(
+          name: 'Zagoth Triome', type: 'land', colorsProduced: ['B', 'G', 'U']),
+      CubeManaSource(
+          name: "Raffine's Tower", type: 'land', colorsProduced: ['W', 'U', 'B']),
+      CubeManaSource(
+          name: "Xander's Lounge", type: 'land', colorsProduced: ['U', 'B', 'R']),
+      CubeManaSource(
+          name: "Ziatora's Proving Ground", type: 'land', colorsProduced: ['B', 'R', 'G']),
+      CubeManaSource(
+          name: "Jetmir's Garden", type: 'land', colorsProduced: ['R', 'G', 'W']),
+      CubeManaSource(
+          name: "Spara's Headquarters", type: 'land', colorsProduced: ['G', 'W', 'U']),
+    ];
+
 // Default rainbow and utility lands
 List<CubeManaSource> defaultUtilityLands() => const [
       CubeManaSource(
@@ -243,6 +327,9 @@ class CubeCalculatorNotifier extends StateNotifier<CubeCalculatorState> {
           paidManaSources: defaultPaidManaSources(),
           fetchLands: defaultFetchLands(),
           dualLands: defaultDualLands(),
+          shockLands: defaultShockLands(),
+          surveilLands: defaultSurveilLands(),
+          triomeLands: defaultTriomeLands(),
           utilityLands: defaultUtilityLands(),
         ));
 
@@ -327,6 +414,45 @@ class CubeCalculatorNotifier extends StateNotifier<CubeCalculatorState> {
     _recalculate(state.copyWith(dualLands: sources));
   }
 
+  void toggleShockLand(int index) {
+    final sources = List<CubeManaSource>.from(state.shockLands);
+    sources[index] = sources[index]
+        .copyWith(count: sources[index].count + 1);
+    _recalculate(state.copyWith(shockLands: sources));
+  }
+
+  void resetShockLand(int index) {
+    final sources = List<CubeManaSource>.from(state.shockLands);
+    sources[index] = sources[index].copyWith(count: 0);
+    _recalculate(state.copyWith(shockLands: sources));
+  }
+
+  void toggleSurveilLand(int index) {
+    final sources = List<CubeManaSource>.from(state.surveilLands);
+    sources[index] = sources[index]
+        .copyWith(count: sources[index].count + 1);
+    _recalculate(state.copyWith(surveilLands: sources));
+  }
+
+  void resetSurveilLand(int index) {
+    final sources = List<CubeManaSource>.from(state.surveilLands);
+    sources[index] = sources[index].copyWith(count: 0);
+    _recalculate(state.copyWith(surveilLands: sources));
+  }
+
+  void toggleTriomeLand(int index) {
+    final sources = List<CubeManaSource>.from(state.triomeLands);
+    sources[index] = sources[index]
+        .copyWith(count: sources[index].count + 1);
+    _recalculate(state.copyWith(triomeLands: sources));
+  }
+
+  void resetTriomeLand(int index) {
+    final sources = List<CubeManaSource>.from(state.triomeLands);
+    sources[index] = sources[index].copyWith(count: 0);
+    _recalculate(state.copyWith(triomeLands: sources));
+  }
+
   void toggleUtilityLand(int index) {
     final sources = List<CubeManaSource>.from(state.utilityLands);
     sources[index] = sources[index]
@@ -346,6 +472,9 @@ class CubeCalculatorNotifier extends StateNotifier<CubeCalculatorState> {
       paidManaSources: defaultPaidManaSources(),
       fetchLands: defaultFetchLands(),
       dualLands: defaultDualLands(),
+      shockLands: defaultShockLands(),
+      surveilLands: defaultSurveilLands(),
+      triomeLands: defaultTriomeLands(),
       utilityLands: defaultUtilityLands(),
     );
   }
@@ -378,6 +507,9 @@ class CubeCalculatorNotifier extends StateNotifier<CubeCalculatorState> {
       ...newState.paidManaSources,
       ...newState.fetchLands,
       ...newState.dualLands,
+      ...newState.shockLands,
+      ...newState.surveilLands,
+      ...newState.triomeLands,
       ...newState.utilityLands,
     ]) {
       if (source.count == 0) continue;

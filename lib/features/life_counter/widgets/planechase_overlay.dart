@@ -1,7 +1,9 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/services/scryfall_image_service.dart';
 import '../models/planechase_model.dart';
 import '../providers/planechase_provider.dart';
 
@@ -39,7 +41,7 @@ class _PlanechaseOverlayState extends ConsumerState<PlanechaseOverlay> {
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeInOut,
-          height: _expanded ? 200 : 56,
+          height: _expanded ? 320 : 56,
           decoration: BoxDecoration(
             color: Colors.black.withOpacity(0.85),
             borderRadius:
@@ -101,54 +103,93 @@ class _PlanechaseOverlayState extends ConsumerState<PlanechaseOverlay> {
                   child: Padding(
                     padding: const EdgeInsets.all(12),
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Current plane details
-                        if (pcState.currentPlane != null) ...[
-                          Text(
-                            pcState.currentPlane!.name,
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.purple.shade100,
+                        // Plane card image
+                        if (pcState.currentPlane != null)
+                          Expanded(
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: CachedNetworkImage(
+                                imageUrl: ScryfallImageService.imageUrlFromName(
+                                    pcState.currentPlane!.name),
+                                fit: BoxFit.contain,
+                                placeholder: (context, url) => Center(
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      SizedBox(
+                                        width: 24,
+                                        height: 24,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          color: Colors.purple.shade200,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        pcState.currentPlane!.name,
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.purple.shade100,
+                                        ),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                errorWidget: (context, url, error) => Center(
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        pcState.currentPlane!.name,
+                                        style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.purple.shade100,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        pcState.currentPlane!.typeLine,
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: Colors.white.withOpacity(0.5),
+                                          fontStyle: FontStyle.italic,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
                             ),
                           ),
-                          const SizedBox(height: 2),
-                          Text(
-                            pcState.currentPlane!.typeLine,
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.white.withOpacity(0.5),
-                              fontStyle: FontStyle.italic,
-                            ),
-                          ),
-                        ],
-                        const Spacer(),
+                        const SizedBox(height: 8),
                         // Last die result
                         if (pcState.lastDieRoll != null)
-                          Center(
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 16, vertical: 6),
-                              decoration: BoxDecoration(
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: _dieResultColor(pcState.lastDieRoll)
+                                  .withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
                                 color: _dieResultColor(pcState.lastDieRoll)
-                                    .withOpacity(0.2),
-                                borderRadius: BorderRadius.circular(20),
-                                border: Border.all(
-                                  color: _dieResultColor(pcState.lastDieRoll)
-                                      .withOpacity(0.5),
-                                ),
+                                    .withOpacity(0.5),
                               ),
-                              child: Text(
-                                _dieResultText(pcState.lastDieRoll!),
-                                style: TextStyle(
-                                  color: _dieResultColor(pcState.lastDieRoll),
-                                  fontWeight: FontWeight.bold,
-                                ),
+                            ),
+                            child: Text(
+                              _dieResultText(pcState.lastDieRoll!),
+                              style: TextStyle(
+                                color: _dieResultColor(pcState.lastDieRoll),
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12,
                               ),
                             ),
                           ),
-                        const Spacer(),
+                        const SizedBox(height: 8),
                         // Action buttons
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -182,13 +223,11 @@ class _PlanechaseOverlayState extends ConsumerState<PlanechaseOverlay> {
                           ],
                         ),
                         // Deck info
-                        Center(
-                          child: Text(
-                            '${pcState.deck.length} in deck \u2022 ${pcState.discard.length} discarded',
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: Colors.white.withOpacity(0.3),
-                            ),
+                        Text(
+                          '${pcState.deck.length} in deck \u2022 ${pcState.discard.length} discarded',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Colors.white.withOpacity(0.3),
                           ),
                         ),
                       ],
