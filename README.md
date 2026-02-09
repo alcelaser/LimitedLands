@@ -43,14 +43,24 @@ Record wins and losses across a draft, sealed, or constructed event.
 - **Persistent storage** - Events saved locally across app restarts
 
 ### Life Counter
-Clean, modern 2-player life counter designed for face-to-face play.
+Full-featured life counter for 2–10 players with format-aware defaults.
 
-- Split-screen layout with Player 2 rotated for across-the-table use
-- Tap to adjust by 1, long press for +/-5
-- **Poison counters** - Track infect damage (0-10), color warnings at lethal thresholds
-- **Experience counters** - Track experience for commander abilities
-- Visual warnings at low life totals
-- Quick reset between games
+- **Format presets** - Standard (20), Commander (40), or Custom starting life
+- **Adaptive layout** - 2-player split-screen (rotated for across-the-table), 3–4 player grid, 5–10 player sideways columns
+- Tap ±1, long press ±10, double-tap for keypad entry (up to 9999)
+- **Poison counters** - Track infect damage with visual warning at lethal (≥10)
+- **Experience, Energy, Storm, Commander Tax** counters — swipe down for the full counter suite
+- **Mana Pool** - Track floating mana (W/U/B/R/G/C) with clear-all
+- **Custom counters** - User-defined counters with custom labels
+- **Commander damage** - Per-source tracking with partner support and ≥21 lethal warning; swipe right to view
+- **Turn tracker** - Turn counter, active player display, auto-skip eliminated players
+- **Game timer** - Total elapsed time + per-player turn time tracking
+- **Dice roller** - D4/D6/D8/D10/D12/D20 with batch rolling (1–20 dice), coin flip, and roll history
+- **High Roll** - D20-based "who goes first" with tie detection and winner auto-set
+- **Planechase** - 86 planar cards, collapsible overlay with rotated card art from Scryfall, planar die (Planeswalk / Chaos / Blank), manual planeswalk, and deck reshuffle
+- **Player management** - Rename, recolor, kill/revive players; swipe left for settings
+- **Persistence** - Auto-save game state; resume in-progress games from the setup screen
+- Visual low-life warnings and haptic feedback throughout
 
 ### 17Lands Card Search
 Look up card ratings from 17lands.com for any draft format.
@@ -76,6 +86,7 @@ lib/
     routing/        # GoRouter with ShellRoute + bottom navigation
     constants/      # MTG constants (deck sizes, land counts, thresholds)
     widgets/        # Shared widgets (mana symbols, scaffold)
+    services/       # Scryfall image service
   features/
     mana_calculator/
       domain/       # Models (freezed) + calculation service
@@ -87,8 +98,10 @@ lib/
       providers/    # Event/match state management
       screens/      # Event list + match recording
     life_counter/
-      providers/    # Riverpod state management
-      screens/      # Life counter UI
+      models/       # Game, planechase, and counter models
+      providers/    # Game, timer, dice, planechase providers
+      screens/      # Setup + game screens
+      widgets/      # Player panels, commander damage, counters, dice, planechase overlay
     card_search/
       providers/    # 17Lands API + state management
       screens/      # Card search + ratings UI
@@ -141,7 +154,7 @@ flutter build apk --release
 flutter test
 ```
 
-- **10 unit tests** - Mana calculation algorithm: proportional distribution, largest-remainder rounding, splash detection, edge cases (zero input, single color, 5-way equal split)
+- **303 unit tests** - Mana calculation, game state, commander damage, planechase, dice rolling, timers, deck builder, match tracker, card search, tournament Swiss pairings, cube calculator, and model serialization
 - **Widget tests** - App rendering and navigation
 
 ## License

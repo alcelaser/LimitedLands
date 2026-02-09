@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -109,7 +111,9 @@ class _PlanechaseOverlayState extends ConsumerState<PlanechaseOverlay> {
                           Expanded(
                             child: ClipRRect(
                               borderRadius: BorderRadius.circular(8),
-                              child: CachedNetworkImage(
+                              child: Transform.rotate(
+                                angle: math.pi / 2,
+                                child: CachedNetworkImage(
                                 imageUrl: ScryfallImageService.imageUrlFromName(
                                     pcState.currentPlane!.name),
                                 fit: BoxFit.contain,
@@ -163,6 +167,7 @@ class _PlanechaseOverlayState extends ConsumerState<PlanechaseOverlay> {
                                   ),
                                 ),
                               ),
+                            ),
                             ),
                           ),
                         const SizedBox(height: 8),
