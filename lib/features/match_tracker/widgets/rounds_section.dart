@@ -14,17 +14,14 @@ class RoundsSection extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(tournamentProvider);
-    final tournament = state.tournaments
-        .where((t) => t.id == tournamentId)
-        .firstOrNull;
+    final tournament =
+        state.tournaments.where((t) => t.id == tournamentId).firstOrNull;
 
     if (tournament == null) {
       return const Center(child: Text('Tournament not found'));
     }
 
-    final playerMap = {
-      for (final p in tournament.players) p.id: p.name
-    };
+    final playerMap = {for (final p in tournament.players) p.id: p.name};
 
     return Column(
       children: [
@@ -41,8 +38,8 @@ class RoundsSection extends ConsumerWidget {
                       .generateNextRound(tournamentId);
                 },
                 icon: const Icon(Icons.auto_awesome, size: 18),
-                label: Text(
-                    'Generate Round ${tournament.currentRoundNumber + 1}'),
+                label:
+                    Text('Generate Round ${tournament.currentRoundNumber + 1}'),
               ),
             ),
           ),
@@ -61,14 +58,11 @@ class RoundsSection extends ConsumerWidget {
                       const SizedBox(height: 12),
                       const Text('No rounds yet',
                           style: TextStyle(color: Colors.white38)),
-                      if (tournament.status ==
-                          TournamentStatus.inProgress)
+                      if (tournament.status == TournamentStatus.inProgress)
                         const Padding(
                           padding: EdgeInsets.only(top: 4),
-                          child: Text(
-                              'Generate the first round to begin',
-                              style:
-                                  TextStyle(color: Colors.white24)),
+                          child: Text('Generate the first round to begin',
+                              style: TextStyle(color: Colors.white24)),
                         ),
                     ],
                   ),
@@ -78,14 +72,13 @@ class RoundsSection extends ConsumerWidget {
                   itemCount: tournament.rounds.length,
                   itemBuilder: (context, index) {
                     // Show rounds newest first.
-                    final round = tournament
-                        .rounds[tournament.rounds.length - 1 - index];
+                    final round =
+                        tournament.rounds[tournament.rounds.length - 1 - index];
                     return _RoundSection(
                       round: round,
                       tournament: tournament,
                       playerMap: playerMap,
-                      notifier:
-                          ref.read(tournamentProvider.notifier),
+                      notifier: ref.read(tournamentProvider.notifier),
                     );
                   },
                 ),
@@ -100,14 +93,12 @@ class RoundsSection extends ConsumerWidget {
                   showModalBottomSheet(
                     context: context,
                     isScrollControlled: true,
-                    backgroundColor: Theme.of(context)
-                        .scaffoldBackgroundColor,
+                    backgroundColor: Theme.of(context).scaffoldBackgroundColor,
                     builder: (_) => DraggableScrollableSheet(
                       initialChildSize: 0.7,
                       maxChildSize: 0.95,
                       minChildSize: 0.4,
-                      builder: (_, controller) =>
-                          BracketTreeWidget(
+                      builder: (_, controller) => BracketTreeWidget(
                         tournament: tournament,
                         scrollController: controller,
                       ),
@@ -155,8 +146,7 @@ class _RoundSection extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               Container(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 8, vertical: 2),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
                   color: round.isComplete
                       ? Colors.green.withOpacity(0.15)
@@ -184,7 +174,7 @@ class _RoundSection extends StatelessWidget {
             player2Name: pairing.isBye
                 ? 'BYE'
                 : (playerMap[pairing.player2Id] ?? 'Unknown'),
-            onReport: (p1w, p2w, isDraw) {
+            onReport: (p1w, p2w, isDraw, isComplete) {
               notifier.reportResult(
                 tournament.id,
                 round.roundNumber,
@@ -192,6 +182,7 @@ class _RoundSection extends StatelessWidget {
                 player1Wins: p1w,
                 player2Wins: p2w,
                 isDraw: isDraw,
+                isComplete: isComplete,
               );
             },
             onReset: () {

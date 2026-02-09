@@ -46,8 +46,7 @@ class _PlanechaseOverlayState extends ConsumerState<PlanechaseOverlay> {
           height: _expanded ? 320 : 56,
           decoration: BoxDecoration(
             color: Colors.black.withOpacity(0.85),
-            borderRadius:
-                const BorderRadius.vertical(top: Radius.circular(12)),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
             border: Border(
               top: BorderSide(
                 color: _dieResultColor(pcState.lastDieRoll).withOpacity(0.5),
@@ -114,60 +113,64 @@ class _PlanechaseOverlayState extends ConsumerState<PlanechaseOverlay> {
                               child: Transform.rotate(
                                 angle: math.pi / 2,
                                 child: CachedNetworkImage(
-                                imageUrl: ScryfallImageService.imageUrlFromName(
-                                    pcState.currentPlane!.name),
-                                fit: BoxFit.contain,
-                                placeholder: (context, url) => Center(
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      SizedBox(
-                                        width: 24,
-                                        height: 24,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                          color: Colors.purple.shade200,
+                                  imageUrl:
+                                      ScryfallImageService.imageUrlFromName(
+                                          pcState.currentPlane!.name),
+                                  fit: BoxFit.contain,
+                                  placeholder: (context, url) => Center(
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        SizedBox(
+                                          width: 24,
+                                          height: 24,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            color: Colors.purple.shade200,
+                                          ),
                                         ),
-                                      ),
-                                      const SizedBox(height: 8),
-                                      Text(
-                                        pcState.currentPlane!.name,
-                                        style: TextStyle(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.purple.shade100,
+                                        const SizedBox(height: 8),
+                                        Text(
+                                          pcState.currentPlane!.name,
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.purple.shade100,
+                                          ),
+                                          textAlign: TextAlign.center,
                                         ),
-                                        textAlign: TextAlign.center,
-                                      ),
-                                    ],
+                                      ],
+                                    ),
                                   ),
-                                ),
-                                errorWidget: (context, url, error) => Center(
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Text(
-                                        pcState.currentPlane!.name,
-                                        style: TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.purple.shade100,
+                                  errorWidget: (context, url, error) => Center(
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Text(
+                                          pcState.currentPlane!.name,
+                                          style: TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.purple.shade100,
+                                          ),
                                         ),
-                                      ),
-                                      const SizedBox(height: 2),
-                                      Text(
-                                        pcState.currentPlane!.typeLine,
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: Colors.white.withOpacity(0.5),
-                                          fontStyle: FontStyle.italic,
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          pcState.currentPlane!.typeLine,
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color:
+                                                Colors.white.withOpacity(0.5),
+                                            fontStyle: FontStyle.italic,
+                                          ),
                                         ),
-                                      ),
-                                    ],
+                                      ],
+                                    ),
                                   ),
                                 ),
                               ),
-                            ),
                             ),
                           ),
                         const SizedBox(height: 8),

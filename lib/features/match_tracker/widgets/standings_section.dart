@@ -12,29 +12,23 @@ class StandingsSection extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(tournamentProvider);
-    final tournament = state.tournaments
-        .where((t) => t.id == tournamentId)
-        .firstOrNull;
+    final tournament =
+        state.tournaments.where((t) => t.id == tournamentId).firstOrNull;
 
     if (tournament == null) {
       return const Center(child: Text('Tournament not found'));
     }
 
-    final standings =
-        SwissPairingService.calculateStandings(tournament);
+    final standings = SwissPairingService.calculateStandings(tournament);
 
-    if (standings.isEmpty ||
-        tournament.status == TournamentStatus.setup) {
+    if (standings.isEmpty || tournament.status == TournamentStatus.setup) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(Icons.leaderboard_outlined,
                 size: 48,
-                color: Theme.of(context)
-                    .colorScheme
-                    .primary
-                    .withOpacity(0.4)),
+                color: Theme.of(context).colorScheme.primary.withOpacity(0.4)),
             const SizedBox(height: 12),
             const Text('Start the tournament to see standings',
                 style: TextStyle(color: Colors.white38)),
@@ -51,7 +45,8 @@ class StandingsSection extends ConsumerWidget {
           1: FlexColumnWidth(),
           2: FixedColumnWidth(40),
           3: FixedColumnWidth(64),
-          4: FixedColumnWidth(56),
+          4: FixedColumnWidth(52),
+          5: FixedColumnWidth(52),
         },
         defaultVerticalAlignment: TableCellVerticalAlignment.middle,
         children: [
@@ -70,6 +65,7 @@ class StandingsSection extends ConsumerWidget {
               _headerCell('Pts'),
               _headerCell('Record'),
               _headerCell('OMW%'),
+              _headerCell('GWP'),
             ],
           ),
           // Data rows
@@ -89,16 +85,14 @@ class StandingsSection extends ConsumerWidget {
               children: [
                 _dataCell(
                   '${entry.rank}',
-                  fontWeight:
-                      isLeader ? FontWeight.bold : FontWeight.normal,
+                  fontWeight: isLeader ? FontWeight.bold : FontWeight.normal,
                   color: isLeader
                       ? Theme.of(context).colorScheme.primary
                       : Colors.white70,
                 ),
                 _dataCell(
                   entry.player.name,
-                  fontWeight:
-                      isLeader ? FontWeight.bold : FontWeight.normal,
+                  fontWeight: isLeader ? FontWeight.bold : FontWeight.normal,
                 ),
                 _dataCell(
                   '${entry.matchPoints}',
@@ -112,6 +106,10 @@ class StandingsSection extends ConsumerWidget {
                 ),
                 _dataCell(
                   '${(entry.omwPercent * 100).toStringAsFixed(0)}%',
+                  color: Colors.white54,
+                ),
+                _dataCell(
+                  '${(entry.gwPercent * 100).toStringAsFixed(0)}%',
                   color: Colors.white54,
                 ),
               ],

@@ -6,7 +6,8 @@ class PairingCard extends StatelessWidget {
   final TournamentPairing pairing;
   final String player1Name;
   final String player2Name;
-  final void Function(int p1Wins, int p2Wins, bool isDraw)? onReport;
+  final void Function(int p1Wins, int p2Wins, bool isDraw, bool isComplete)?
+      onReport;
   final VoidCallback? onReset;
 
   const PairingCard({
@@ -62,8 +63,8 @@ class PairingCard extends StatelessWidget {
                 ),
                 if (pairing.isBye)
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 8, vertical: 2),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                     decoration: BoxDecoration(
                       color: Colors.blue.shade300.withOpacity(0.15),
                       borderRadius: BorderRadius.circular(6),
@@ -77,8 +78,7 @@ class PairingCard extends StatelessWidget {
                   )
                 else ...[
                   const Text('vs',
-                      style: TextStyle(
-                          color: Colors.white38, fontSize: 12)),
+                      style: TextStyle(color: Colors.white38, fontSize: 12)),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
@@ -100,10 +100,7 @@ class PairingCard extends StatelessWidget {
                 children: [
                   Text(
                     '${pairing.player1Wins} - ${pairing.player2Wins}',
-                    style: Theme.of(context)
-                        .textTheme
-                        .headlineSmall
-                        ?.copyWith(
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                           fontWeight: FontWeight.bold,
                           color: color,
                         ),
@@ -116,7 +113,9 @@ class PairingCard extends StatelessWidget {
                       onTap: () {
                         HapticFeedback.lightImpact();
                         final p1w = pairing.player1Wins + 1;
-                        onReport!(p1w, pairing.player2Wins, false);
+                        final autoComplete = p1w >= 2;
+                        onReport!(
+                            p1w, pairing.player2Wins, false, autoComplete);
                       },
                     ),
                     const SizedBox(width: 6),
@@ -126,7 +125,9 @@ class PairingCard extends StatelessWidget {
                       onTap: () {
                         HapticFeedback.lightImpact();
                         final p2w = pairing.player2Wins + 1;
-                        onReport!(pairing.player1Wins, p2w, false);
+                        final autoComplete = p2w >= 2;
+                        onReport!(
+                            pairing.player1Wins, p2w, false, autoComplete);
                       },
                     ),
                     const SizedBox(width: 6),
@@ -135,7 +136,8 @@ class PairingCard extends StatelessWidget {
                       color: Colors.amber.shade300,
                       onTap: () {
                         HapticFeedback.lightImpact();
-                        onReport!(0, 0, true);
+                        onReport!(pairing.player1Wins, pairing.player2Wins,
+                            true, true);
                       },
                     ),
                   ] else if (pairing.isComplete) ...[
@@ -202,8 +204,7 @@ class _ScoreButton extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(6),
         child: Container(
-          padding:
-              const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(6),
             border: Border.all(color: color.withOpacity(0.5)),

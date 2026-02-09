@@ -42,6 +42,19 @@ Record wins and losses across a draft, sealed, or constructed event.
 - Overall event record summary (e.g. 2-1)
 - **Persistent storage** - Events saved locally across app restarts
 
+### Swiss Tournament
+Run a full Swiss-paired tournament with automatic bracket-based pairings.
+
+- **Swiss pairing engine** - Bracket-based pairing groups players by match points, pairs within brackets, and drops odd players down. Rematch avoidance with fallback
+- **Best-of-3 game tracking** - Tap to record individual game wins; match auto-completes at 2 wins
+- **Bye handling** - Odd player count assigns a bye (2-0 win) to the lowest-ranked player who hasn't had one
+- **MTG tiebreakers** - Match Points → Opponent Match Win % (OMW%) → Game Win % (GWP), with 0.33 floor per WotC rules. Byes excluded from tiebreaker calculations
+- **Standings table** - Live rankings with Points, Record, OMW%, and GWP columns
+- **Bracket view** - Visual bracket tree of all rounds
+- **Recommended rounds** - Auto-calculates rounds via ceil(log₂(N))
+- **Full CRUD** - Create, rename, delete tournaments; add/remove players during setup
+- **Persistent storage** - Tournaments saved locally across app restarts
+
 ### Life Counter
 Full-featured life counter for 2–10 players with format-aware defaults.
 
@@ -95,8 +108,11 @@ lib/
       providers/    # Deck CRUD state management
       screens/      # Deck list + detail screens
     match_tracker/
-      providers/    # Event/match state management
-      screens/      # Event list + match recording
+      models/       # Tournament, pairing, and standings models
+      providers/    # Event/match + tournament state management
+      services/     # Swiss pairing engine
+      screens/      # Event list, match recording, tournament detail
+      widgets/      # Pairing cards, bracket tree, standings table
     life_counter/
       models/       # Game, planechase, and counter models
       providers/    # Game, timer, dice, planechase providers

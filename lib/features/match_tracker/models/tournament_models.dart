@@ -109,8 +109,8 @@ class TournamentRound {
     return TournamentRound(
       roundNumber: json['roundNumber'] as int,
       pairings: (json['pairings'] as List<dynamic>?)
-              ?.map((e) =>
-                  TournamentPairing.fromJson(e as Map<String, dynamic>))
+              ?.map(
+                  (e) => TournamentPairing.fromJson(e as Map<String, dynamic>))
               .toList() ??
           [],
     );
@@ -149,8 +149,7 @@ class Tournament {
       (rounds.isEmpty || rounds.last.isComplete);
 
   bool get isComplete =>
-      currentRoundNumber >= totalRounds &&
-      rounds.every((r) => r.isComplete);
+      currentRoundNumber >= totalRounds && rounds.every((r) => r.isComplete);
 
   Tournament copyWith({
     String? name,
@@ -193,13 +192,11 @@ class Tournament {
       format: json['format'] as String? ?? 'Limited',
       totalRounds: json['totalRounds'] as int? ?? 3,
       players: (json['players'] as List<dynamic>?)
-              ?.map((e) =>
-                  TournamentPlayer.fromJson(e as Map<String, dynamic>))
+              ?.map((e) => TournamentPlayer.fromJson(e as Map<String, dynamic>))
               .toList() ??
           [],
       rounds: (json['rounds'] as List<dynamic>?)
-              ?.map((e) =>
-                  TournamentRound.fromJson(e as Map<String, dynamic>))
+              ?.map((e) => TournamentRound.fromJson(e as Map<String, dynamic>))
               .toList() ??
           [],
       status: TournamentStatus.values.firstWhere(
@@ -220,6 +217,7 @@ class StandingsEntry {
   final int draws;
   final int byeCount;
   final double omwPercent;
+  final double gwPercent;
   final int rank;
 
   const StandingsEntry({
@@ -230,6 +228,7 @@ class StandingsEntry {
     required this.draws,
     required this.byeCount,
     required this.omwPercent,
+    this.gwPercent = 0.33,
     required this.rank,
   });
 

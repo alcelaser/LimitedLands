@@ -57,8 +57,7 @@ class TournamentNotifier extends StateNotifier<TournamentState> {
     }
   }
 
-  void _recoverIdCounter(
-      String id, String prefix, void Function(int) onFound) {
+  void _recoverIdCounter(String id, String prefix, void Function(int) onFound) {
     if (id.startsWith(prefix)) {
       final num = int.tryParse(id.substring(prefix.length));
       if (num != null) onFound(num);
@@ -111,8 +110,7 @@ class TournamentNotifier extends StateNotifier<TournamentState> {
 
   TournamentPlayer? addPlayer(String tournamentId, String playerName) {
     final tournament = _find(tournamentId);
-    if (tournament == null ||
-        tournament.status != TournamentStatus.setup) {
+    if (tournament == null || tournament.status != TournamentStatus.setup) {
       return null;
     }
     final player = TournamentPlayer(
@@ -127,8 +125,7 @@ class TournamentNotifier extends StateNotifier<TournamentState> {
 
   void removePlayer(String tournamentId, String playerId) {
     final tournament = _find(tournamentId);
-    if (tournament == null ||
-        tournament.status != TournamentStatus.setup) {
+    if (tournament == null || tournament.status != TournamentStatus.setup) {
       return;
     }
     updateTournament(tournament.copyWith(
@@ -140,8 +137,7 @@ class TournamentNotifier extends StateNotifier<TournamentState> {
 
   void startTournament(String tournamentId) {
     final tournament = _find(tournamentId);
-    if (tournament == null ||
-        tournament.status != TournamentStatus.setup) {
+    if (tournament == null || tournament.status != TournamentStatus.setup) {
       return;
     }
     if (tournament.players.length < 2) return;
@@ -181,6 +177,7 @@ class TournamentNotifier extends StateNotifier<TournamentState> {
     required int player1Wins,
     required int player2Wins,
     bool isDraw = false,
+    bool isComplete = true,
   }) {
     final tournament = _find(tournamentId);
     if (tournament == null) return;
@@ -196,7 +193,7 @@ class TournamentNotifier extends StateNotifier<TournamentState> {
         player1Wins: player1Wins,
         player2Wins: player2Wins,
         isDraw: isDraw,
-        isComplete: true,
+        isComplete: isComplete,
       );
     }).toList();
 

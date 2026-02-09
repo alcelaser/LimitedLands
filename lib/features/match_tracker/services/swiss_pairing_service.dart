@@ -14,6 +14,10 @@ class SwissPairingService {
 
   /// Generate the next round of pairings for a tournament.
   ///
+  /// Uses bracket-based Swiss pairing: players are grouped by match points,
+  /// then paired within brackets (top vs bottom). Odd players in a bracket
+  /// drop down to the next bracket. Rematches are avoided where possible.
+  ///
   /// [nextPairingIdStart] is the next sequential ID number for pairings.
   static TournamentRound generateNextRound({
     required Tournament tournament,
@@ -22,6 +26,7 @@ class SwissPairingService {
     final roundNumber = tournament.currentRoundNumber + 1;
     final standings = calculateStandings(tournament);
     final sortedPlayerIds = standings.map((e) => e.player.id).toList();
+    final standingsMap = {for (final e in standings) e.player.id: e};
     final previousPairs = _buildPreviousPairsSet(tournament);
     final playersWithBye = _playersWithBye(tournament);
 
@@ -30,7 +35,8 @@ class SwissPairingService {
 
     final remainingIds = List<String>.from(sortedPlayerIds);
 
-    // Handle odd number of players: assign bye.
+    // Handle odd number of players: assign bye to the lowest-ranked player
+    // who hasn't had one yet.
     if (remainingIds.length.isOdd) {
       String? byePlayerId;
       for (int i = remainingIds.length - 1; i >= 0; i--) {
@@ -55,8 +61,8 @@ class SwissPairingService {
       }
     }
 
-    // Greedy adjacent pairing with rematch avoidance.
-    final paired = _greedyPair(remainingIds, previousPairs);
+    // Bracket-based Swiss pairing with rematch avoidance.
+    final paired = _bracketPair(remainingIds, standingsMap, previousPairs);
     for (final pair in paired) {
       pairings.add(TournamentPairing(
         id: 'pair_${pairingId++}',
@@ -72,13 +78,15 @@ class SwissPairingService {
   }
 
   /// Calculate full standings for a tournament.
-  /// Sorted by match points (desc), then OMW% (desc).
+  /// Sorted by match points (desc), then OMW% (desc), then GWP (desc).
   static List<StandingsEntry> calculateStandings(Tournament tournament) {
     final wins = <String, int>{};
     final losses = <String, int>{};
     final draws = <String, int>{};
     final byes = <String, int>{};
     final opponentIds = <String, List<String>>{};
+    final gameWins = <String, int>{};
+    final gameLosses = <String, int>{};
 
     for (final player in tournament.players) {
       wins[player.id] = 0;
@@ -86,6 +94,8 @@ class SwissPairingService {
       draws[player.id] = 0;
       byes[player.id] = 0;
       opponentIds[player.id] = [];
+      gameWins[player.id] = 0;
+      gameLosses[player.id] = 0;
     }
 
     for (final round in tournament.rounds) {
@@ -95,6 +105,7 @@ class SwissPairingService {
         if (pairing.isBye) {
           wins[pairing.player1Id] = (wins[pairing.player1Id] ?? 0) + 1;
           byes[pairing.player1Id] = (byes[pairing.player1Id] ?? 0) + 1;
+          // Byes award 2-0 game wins but are excluded from GWP/OMW per MTG rules.
           continue;
         }
 
@@ -103,16 +114,23 @@ class SwissPairingService {
         opponentIds[p1]?.add(p2);
         opponentIds[p2]?.add(p1);
 
+        // Track individual game wins/losses.
+        gameWins[p1] = (gameWins[p1] ?? 0) + pairing.player1Wins;
+        gameLosses[p1] = (gameLosses[p1] ?? 0) + pairing.player2Wins;
+        gameWins[p2] = (gameWins[p2] ?? 0) + pairing.player2Wins;
+        gameLosses[p2] = (gameLosses[p2] ?? 0) + pairing.player1Wins;
+
         if (pairing.isDraw) {
           draws[p1] = (draws[p1] ?? 0) + 1;
           draws[p2] = (draws[p2] ?? 0) + 1;
         } else if (pairing.player1Wins > pairing.player2Wins) {
           wins[p1] = (wins[p1] ?? 0) + 1;
           losses[p2] = (losses[p2] ?? 0) + 1;
-        } else {
+        } else if (pairing.player2Wins > pairing.player1Wins) {
           wins[p2] = (wins[p2] ?? 0) + 1;
           losses[p1] = (losses[p1] ?? 0) + 1;
         }
+        // Equal game wins without isDraw means match is still undecided — skip.
       }
     }
 
@@ -123,19 +141,23 @@ class SwissPairingService {
     }
 
     // Match win percentage per player (floored at 0.33 per MTG rules).
+    // Byes are excluded from the calculation.
     final mwPercent = <String, double>{};
     for (final player in tournament.players) {
       final totalPlayed =
           wins[player.id]! + losses[player.id]! + draws[player.id]!;
-      if (totalPlayed == 0) {
-        mwPercent[player.id] = 0.0;
+      final nonByeWins = wins[player.id]! - byes[player.id]!;
+      final nonByePlayed = totalPlayed - byes[player.id]!;
+      if (nonByePlayed <= 0) {
+        mwPercent[player.id] = 0.33;
       } else {
-        final rawPct = matchPoints[player.id]! / (totalPlayed * 3);
+        final nonByePoints = (nonByeWins * 3) + draws[player.id]!;
+        final rawPct = nonByePoints / (nonByePlayed * 3);
         mwPercent[player.id] = rawPct < 0.33 ? 0.33 : rawPct;
       }
     }
 
-    // Opponent Match Win % per player.
+    // Opponent Match Win % per player (byes excluded — no opponent to track).
     final omwPercent = <String, double>{};
     for (final player in tournament.players) {
       final opponents = opponentIds[player.id]!;
@@ -150,6 +172,20 @@ class SwissPairingService {
       }
     }
 
+    // Game Win Percentage per player (floored at 0.33 per MTG rules).
+    final gwPercent = <String, double>{};
+    for (final player in tournament.players) {
+      final gw = gameWins[player.id]!;
+      final gl = gameLosses[player.id]!;
+      final totalGames = gw + gl;
+      if (totalGames == 0) {
+        gwPercent[player.id] = 0.33;
+      } else {
+        final rawPct = gw / totalGames;
+        gwPercent[player.id] = rawPct < 0.33 ? 0.33 : rawPct;
+      }
+    }
+
     // Build entries.
     final entries = <StandingsEntry>[];
     for (final player in tournament.players) {
@@ -161,15 +197,18 @@ class SwissPairingService {
         draws: draws[player.id]!,
         byeCount: byes[player.id]!,
         omwPercent: omwPercent[player.id]!,
+        gwPercent: gwPercent[player.id]!,
         rank: 0,
       ));
     }
 
-    // Sort: match points desc, then OMW% desc.
+    // Sort: match points desc, then OMW% desc, then GWP desc.
     entries.sort((a, b) {
       final mpCompare = b.matchPoints.compareTo(a.matchPoints);
       if (mpCompare != 0) return mpCompare;
-      return b.omwPercent.compareTo(a.omwPercent);
+      final omwCompare = b.omwPercent.compareTo(a.omwPercent);
+      if (omwCompare != 0) return omwCompare;
+      return b.gwPercent.compareTo(a.gwPercent);
     });
 
     // Assign ranks.
@@ -183,6 +222,7 @@ class SwissPairingService {
         draws: e.draws,
         byeCount: e.byeCount,
         omwPercent: e.omwPercent,
+        gwPercent: e.gwPercent,
         rank: i + 1,
       );
     });
@@ -218,6 +258,53 @@ class SwissPairingService {
   static bool _havePlayed(String p1, String p2, Set<String> previousPairs) {
     final sorted = [p1, p2]..sort();
     return previousPairs.contains('${sorted[0]}|${sorted[1]}');
+  }
+
+  /// Bracket-based Swiss pairing.
+  ///
+  /// Groups players by match points, then pairs within each bracket
+  /// (1st vs middle, 2nd vs middle+1, etc.). If a bracket has an odd number
+  /// of players, the lowest drops to the next bracket. Avoids rematches
+  /// where possible.
+  static List<(String, String)> _bracketPair(
+    List<String> playerIds,
+    Map<String, StandingsEntry> standingsMap,
+    Set<String> previousPairs,
+  ) {
+    if (playerIds.length < 2) return [];
+
+    // Group players into brackets by match points.
+    final brackets = <int, List<String>>{};
+    for (final id in playerIds) {
+      final pts = standingsMap[id]?.matchPoints ?? 0;
+      brackets.putIfAbsent(pts, () => []).add(id);
+    }
+
+    // Sort bracket keys descending (highest points first).
+    final sortedKeys = brackets.keys.toList()..sort((a, b) => b.compareTo(a));
+
+    // Flatten brackets, dropping odd players to the next bracket.
+    final orderedIds = <String>[];
+    String? floater;
+    for (int k = 0; k < sortedKeys.length; k++) {
+      final bracket = brackets[sortedKeys[k]]!;
+      if (floater != null) {
+        bracket.insert(0, floater);
+        floater = null;
+      }
+      if (bracket.length.isOdd) {
+        // Drop the lowest player in the bracket to the next one.
+        floater = bracket.removeLast();
+      }
+      orderedIds.addAll(bracket);
+    }
+    // If there's still a floater after all brackets, add them at the end.
+    if (floater != null) {
+      orderedIds.add(floater);
+    }
+
+    // Now pair within each bracket segment using fold pairing (1 vs n/2+1).
+    return _greedyPair(orderedIds, previousPairs);
   }
 
   /// Greedy adjacent pairing avoiding rematches where possible.
