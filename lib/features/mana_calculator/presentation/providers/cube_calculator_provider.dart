@@ -123,11 +123,16 @@ class CubeCalculatorState {
   int get totalPaidMana =>
       paidManaSources.fold<int>(0, (sum, s) => sum + s.count);
   int get totalNonLandMana => totalFastMana + totalPaidMana;
-  int get landsNeeded =>
-      (targetManaSourceCount - totalNonLandMana).clamp(0, targetManaSourceCount);
-  int get totalNonbasicLands =>
-      [...fetchLands, ...dualLands, ...shockLands, ...surveilLands, ...triomeLands, ...utilityLands]
-          .fold<int>(0, (sum, s) => sum + s.count);
+  int get landsNeeded => (targetManaSourceCount - totalNonLandMana)
+      .clamp(0, targetManaSourceCount);
+  int get totalNonbasicLands => [
+        ...fetchLands,
+        ...dualLands,
+        ...shockLands,
+        ...surveilLands,
+        ...triomeLands,
+        ...utilityLands
+      ].fold<int>(0, (sum, s) => sum + s.count);
   int get basicLandsNeeded =>
       (landsNeeded - totalNonbasicLands).clamp(0, landsNeeded);
 }
@@ -135,49 +140,55 @@ class CubeCalculatorState {
 // Default fast mana sources available in Vintage Cube
 List<CubeManaSource> defaultFastManaSources() => const [
       CubeManaSource(
-          name: 'Black Lotus', type: 'fast', colorsProduced: ['W', 'U', 'B', 'R', 'G']),
-      CubeManaSource(
-          name: 'Mox Sapphire', type: 'fast', colorsProduced: ['U']),
+          name: 'Black Lotus',
+          type: 'fast',
+          colorsProduced: ['W', 'U', 'B', 'R', 'G']),
+      CubeManaSource(name: 'Mox Sapphire', type: 'fast', colorsProduced: ['U']),
       CubeManaSource(name: 'Mox Jet', type: 'fast', colorsProduced: ['B']),
       CubeManaSource(name: 'Mox Ruby', type: 'fast', colorsProduced: ['R']),
+      CubeManaSource(name: 'Mox Pearl', type: 'fast', colorsProduced: ['W']),
+      CubeManaSource(name: 'Mox Emerald', type: 'fast', colorsProduced: ['G']),
       CubeManaSource(
-          name: 'Mox Pearl', type: 'fast', colorsProduced: ['W']),
+          name: 'Chrome Mox',
+          type: 'fast',
+          colorsProduced: ['W', 'U', 'B', 'R', 'G']),
       CubeManaSource(
-          name: 'Mox Emerald', type: 'fast', colorsProduced: ['G']),
+          name: 'Mox Diamond',
+          type: 'fast',
+          colorsProduced: ['W', 'U', 'B', 'R', 'G']),
       CubeManaSource(
-          name: 'Chrome Mox', type: 'fast', colorsProduced: ['W', 'U', 'B', 'R', 'G']),
+          name: 'Lotus Petal',
+          type: 'fast',
+          colorsProduced: ['W', 'U', 'B', 'R', 'G']),
+      CubeManaSource(name: 'Mana Crypt', type: 'fast', colorsProduced: []),
       CubeManaSource(
-          name: 'Mox Diamond', type: 'fast', colorsProduced: ['W', 'U', 'B', 'R', 'G']),
-      CubeManaSource(
-          name: 'Lotus Petal', type: 'fast', colorsProduced: ['W', 'U', 'B', 'R', 'G']),
-      CubeManaSource(
-          name: 'Mana Crypt', type: 'fast', colorsProduced: []),
-      CubeManaSource(
-          name: 'Mox Opal', type: 'fast', colorsProduced: ['W', 'U', 'B', 'R', 'G']),
+          name: 'Mox Opal',
+          type: 'fast',
+          colorsProduced: ['W', 'U', 'B', 'R', 'G']),
     ];
 
 List<CubeManaSource> defaultPaidManaSources() => const [
       CubeManaSource(name: 'Sol Ring', type: 'paid', colorsProduced: []),
+      CubeManaSource(name: 'Grim Monolith', type: 'paid', colorsProduced: []),
+      CubeManaSource(name: 'Mana Vault', type: 'paid', colorsProduced: []),
+      CubeManaSource(name: 'Mind Stone', type: 'paid', colorsProduced: []),
+      CubeManaSource(name: 'Worn Powerstone', type: 'paid', colorsProduced: []),
+      CubeManaSource(name: 'Thran Dynamo', type: 'paid', colorsProduced: []),
       CubeManaSource(
-          name: 'Grim Monolith', type: 'paid', colorsProduced: []),
+          name: 'Coalition Relic',
+          type: 'paid',
+          colorsProduced: ['W', 'U', 'B', 'R', 'G']),
       CubeManaSource(
-          name: 'Mana Vault', type: 'paid', colorsProduced: []),
-      CubeManaSource(
-          name: 'Mind Stone', type: 'paid', colorsProduced: []),
-      CubeManaSource(
-          name: 'Worn Powerstone', type: 'paid', colorsProduced: []),
-      CubeManaSource(
-          name: 'Thran Dynamo', type: 'paid', colorsProduced: []),
-      CubeManaSource(
-          name: 'Coalition Relic', type: 'paid', colorsProduced: ['W', 'U', 'B', 'R', 'G']),
-      CubeManaSource(
-          name: 'Chromatic Lantern', type: 'paid', colorsProduced: ['W', 'U', 'B', 'R', 'G']),
-      CubeManaSource(
-          name: 'Basalt Monolith', type: 'paid', colorsProduced: []),
+          name: 'Chromatic Lantern',
+          type: 'paid',
+          colorsProduced: ['W', 'U', 'B', 'R', 'G']),
+      CubeManaSource(name: 'Basalt Monolith', type: 'paid', colorsProduced: []),
       CubeManaSource(
           name: 'Everflowing Chalice', type: 'paid', colorsProduced: []),
       CubeManaSource(
-          name: 'Signets / Talismans', type: 'paid', colorsProduced: ['W', 'U', 'B', 'R', 'G']),
+          name: 'Signets / Talismans',
+          type: 'paid',
+          colorsProduced: ['W', 'U', 'B', 'R', 'G']),
     ];
 
 // Default fetch lands available in Vintage Cube
@@ -206,24 +217,20 @@ List<CubeManaSource> defaultFetchLands() => const [
 
 // Default dual lands available in Vintage Cube (ABUR duals)
 List<CubeManaSource> defaultDualLands() => const [
-      CubeManaSource(
-          name: 'Tundra', type: 'land', colorsProduced: ['W', 'U']),
+      CubeManaSource(name: 'Tundra', type: 'land', colorsProduced: ['W', 'U']),
       CubeManaSource(
           name: 'Underground Sea', type: 'land', colorsProduced: ['U', 'B']),
       CubeManaSource(
           name: 'Badlands', type: 'land', colorsProduced: ['B', 'R']),
-      CubeManaSource(
-          name: 'Taiga', type: 'land', colorsProduced: ['R', 'G']),
+      CubeManaSource(name: 'Taiga', type: 'land', colorsProduced: ['R', 'G']),
       CubeManaSource(
           name: 'Savannah', type: 'land', colorsProduced: ['G', 'W']),
       CubeManaSource(
           name: 'Scrubland', type: 'land', colorsProduced: ['W', 'B']),
       CubeManaSource(
           name: 'Volcanic Island', type: 'land', colorsProduced: ['U', 'R']),
-      CubeManaSource(
-          name: 'Bayou', type: 'land', colorsProduced: ['B', 'G']),
-      CubeManaSource(
-          name: 'Plateau', type: 'land', colorsProduced: ['R', 'W']),
+      CubeManaSource(name: 'Bayou', type: 'land', colorsProduced: ['B', 'G']),
+      CubeManaSource(name: 'Plateau', type: 'land', colorsProduced: ['R', 'W']),
       CubeManaSource(
           name: 'Tropical Island', type: 'land', colorsProduced: ['G', 'U']),
     ];
@@ -259,19 +266,23 @@ List<CubeManaSource> defaultSurveilLands() => const [
       CubeManaSource(
           name: 'Undercity Sewers', type: 'land', colorsProduced: ['U', 'B']),
       CubeManaSource(
-          name: 'Shadowy Backstreet', type: 'land', colorsProduced: ['B', 'R']),
+          name: 'Shadowy Backstreet', type: 'land', colorsProduced: ['W', 'B']),
       CubeManaSource(
-          name: 'Raucous Theater', type: 'land', colorsProduced: ['R', 'G']),
+          name: 'Raucous Theater', type: 'land', colorsProduced: ['B', 'R']),
       CubeManaSource(
           name: 'Lush Portico', type: 'land', colorsProduced: ['G', 'W']),
       CubeManaSource(
-          name: 'Elegant Parlor', type: 'land', colorsProduced: ['W', 'B']),
+          name: 'Elegant Parlor', type: 'land', colorsProduced: ['W', 'R']),
       CubeManaSource(
-          name: 'Commercial District', type: 'land', colorsProduced: ['U', 'R']),
+          name: 'Commercial District',
+          type: 'land',
+          colorsProduced: ['R', 'G']),
       CubeManaSource(
-          name: 'Underground Mortuary', type: 'land', colorsProduced: ['B', 'G']),
+          name: 'Underground Mortuary',
+          type: 'land',
+          colorsProduced: ['B', 'G']),
       CubeManaSource(
-          name: 'Thundering Falls', type: 'land', colorsProduced: ['R', 'W']),
+          name: 'Thundering Falls', type: 'land', colorsProduced: ['R', 'U']),
       CubeManaSource(
           name: 'Hedge Maze', type: 'land', colorsProduced: ['G', 'U']),
     ];
@@ -279,41 +290,58 @@ List<CubeManaSource> defaultSurveilLands() => const [
 // Default triome lands (Ikoria + Streets of New Capenna)
 List<CubeManaSource> defaultTriomeLands() => const [
       CubeManaSource(
-          name: 'Indatha Triome', type: 'land', colorsProduced: ['W', 'B', 'G']),
+          name: 'Indatha Triome',
+          type: 'land',
+          colorsProduced: ['W', 'B', 'G']),
       CubeManaSource(
           name: 'Ketria Triome', type: 'land', colorsProduced: ['U', 'R', 'G']),
       CubeManaSource(
-          name: 'Raugrin Triome', type: 'land', colorsProduced: ['U', 'R', 'W']),
+          name: 'Raugrin Triome',
+          type: 'land',
+          colorsProduced: ['U', 'R', 'W']),
       CubeManaSource(
           name: 'Savai Triome', type: 'land', colorsProduced: ['R', 'W', 'B']),
       CubeManaSource(
           name: 'Zagoth Triome', type: 'land', colorsProduced: ['B', 'G', 'U']),
       CubeManaSource(
-          name: "Raffine's Tower", type: 'land', colorsProduced: ['W', 'U', 'B']),
+          name: "Raffine's Tower",
+          type: 'land',
+          colorsProduced: ['W', 'U', 'B']),
       CubeManaSource(
-          name: "Xander's Lounge", type: 'land', colorsProduced: ['U', 'B', 'R']),
+          name: "Xander's Lounge",
+          type: 'land',
+          colorsProduced: ['U', 'B', 'R']),
       CubeManaSource(
-          name: "Ziatora's Proving Ground", type: 'land', colorsProduced: ['B', 'R', 'G']),
+          name: "Ziatora's Proving Ground",
+          type: 'land',
+          colorsProduced: ['B', 'R', 'G']),
       CubeManaSource(
-          name: "Jetmir's Garden", type: 'land', colorsProduced: ['R', 'G', 'W']),
+          name: "Jetmir's Garden",
+          type: 'land',
+          colorsProduced: ['R', 'G', 'W']),
       CubeManaSource(
-          name: "Spara's Headquarters", type: 'land', colorsProduced: ['G', 'W', 'U']),
+          name: "Spara's Headquarters",
+          type: 'land',
+          colorsProduced: ['G', 'W', 'U']),
     ];
 
 // Default rainbow and utility lands
 List<CubeManaSource> defaultUtilityLands() => const [
       CubeManaSource(
-          name: 'City of Brass', type: 'land', colorsProduced: ['W', 'U', 'B', 'R', 'G']),
+          name: 'City of Brass',
+          type: 'land',
+          colorsProduced: ['W', 'U', 'B', 'R', 'G']),
       CubeManaSource(
-          name: 'Mana Confluence', type: 'land', colorsProduced: ['W', 'U', 'B', 'R', 'G']),
+          name: 'Mana Confluence',
+          type: 'land',
+          colorsProduced: ['W', 'U', 'B', 'R', 'G']),
       CubeManaSource(
-          name: 'Prismatic Vista', type: 'land', colorsProduced: ['W', 'U', 'B', 'R', 'G']),
-      CubeManaSource(
-          name: 'Ancient Tomb', type: 'land', colorsProduced: []),
-      CubeManaSource(
-          name: 'Strip Mine', type: 'land', colorsProduced: []),
-      CubeManaSource(
-          name: 'Wasteland', type: 'land', colorsProduced: []),
+          name: 'Prismatic Vista',
+          type: 'land',
+          colorsProduced: ['W', 'U', 'B', 'R', 'G']),
+      CubeManaSource(name: 'Ancient Tomb', type: 'land', colorsProduced: []),
+      CubeManaSource(name: 'Strip Mine', type: 'land', colorsProduced: []),
+      CubeManaSource(name: 'Wasteland', type: 'land', colorsProduced: []),
       CubeManaSource(
           name: 'Library of Alexandria', type: 'land', colorsProduced: []),
       CubeManaSource(
@@ -364,15 +392,13 @@ class CubeCalculatorNotifier extends StateNotifier<CubeCalculatorState> {
 
   void toggleFastMana(int index) {
     final sources = List<CubeManaSource>.from(state.fastManaSources);
-    sources[index] = sources[index]
-        .copyWith(count: sources[index].count + 1);
+    sources[index] = sources[index].copyWith(count: sources[index].count + 1);
     _recalculate(state.copyWith(fastManaSources: sources));
   }
 
   void togglePaidMana(int index) {
     final sources = List<CubeManaSource>.from(state.paidManaSources);
-    sources[index] = sources[index]
-        .copyWith(count: sources[index].count + 1);
+    sources[index] = sources[index].copyWith(count: sources[index].count + 1);
     _recalculate(state.copyWith(paidManaSources: sources));
   }
 
@@ -390,8 +416,7 @@ class CubeCalculatorNotifier extends StateNotifier<CubeCalculatorState> {
 
   void toggleFetchLand(int index) {
     final sources = List<CubeManaSource>.from(state.fetchLands);
-    sources[index] = sources[index]
-        .copyWith(count: sources[index].count + 1);
+    sources[index] = sources[index].copyWith(count: sources[index].count + 1);
     _recalculate(state.copyWith(fetchLands: sources));
   }
 
@@ -403,8 +428,7 @@ class CubeCalculatorNotifier extends StateNotifier<CubeCalculatorState> {
 
   void toggleDualLand(int index) {
     final sources = List<CubeManaSource>.from(state.dualLands);
-    sources[index] = sources[index]
-        .copyWith(count: sources[index].count + 1);
+    sources[index] = sources[index].copyWith(count: sources[index].count + 1);
     _recalculate(state.copyWith(dualLands: sources));
   }
 
@@ -416,8 +440,7 @@ class CubeCalculatorNotifier extends StateNotifier<CubeCalculatorState> {
 
   void toggleShockLand(int index) {
     final sources = List<CubeManaSource>.from(state.shockLands);
-    sources[index] = sources[index]
-        .copyWith(count: sources[index].count + 1);
+    sources[index] = sources[index].copyWith(count: sources[index].count + 1);
     _recalculate(state.copyWith(shockLands: sources));
   }
 
@@ -429,8 +452,7 @@ class CubeCalculatorNotifier extends StateNotifier<CubeCalculatorState> {
 
   void toggleSurveilLand(int index) {
     final sources = List<CubeManaSource>.from(state.surveilLands);
-    sources[index] = sources[index]
-        .copyWith(count: sources[index].count + 1);
+    sources[index] = sources[index].copyWith(count: sources[index].count + 1);
     _recalculate(state.copyWith(surveilLands: sources));
   }
 
@@ -442,8 +464,7 @@ class CubeCalculatorNotifier extends StateNotifier<CubeCalculatorState> {
 
   void toggleTriomeLand(int index) {
     final sources = List<CubeManaSource>.from(state.triomeLands);
-    sources[index] = sources[index]
-        .copyWith(count: sources[index].count + 1);
+    sources[index] = sources[index].copyWith(count: sources[index].count + 1);
     _recalculate(state.copyWith(triomeLands: sources));
   }
 
@@ -455,8 +476,7 @@ class CubeCalculatorNotifier extends StateNotifier<CubeCalculatorState> {
 
   void toggleUtilityLand(int index) {
     final sources = List<CubeManaSource>.from(state.utilityLands);
-    sources[index] = sources[index]
-        .copyWith(count: sources[index].count + 1);
+    sources[index] = sources[index].copyWith(count: sources[index].count + 1);
     _recalculate(state.copyWith(utilityLands: sources));
   }
 
@@ -529,8 +549,8 @@ class CubeCalculatorNotifier extends StateNotifier<CubeCalculatorState> {
     for (final entry in activeColors.entries) {
       final proportion = entry.value / totalSymbols;
       final bonus = colorBonus[entry.key] ?? 0;
-      rawLands[entry.key] =
-          (proportion * basicLandsNeeded - bonus * 0.5).clamp(0, basicLandsNeeded.toDouble());
+      rawLands[entry.key] = (proportion * basicLandsNeeded - bonus * 0.5)
+          .clamp(0, basicLandsNeeded.toDouble());
     }
 
     // Normalize to sum to basicLandsNeeded
@@ -638,8 +658,7 @@ class CubeCalculatorNotifier extends StateNotifier<CubeCalculatorState> {
         totalLands: finalTotal,
         basicLandCount: finalBasicTotal,
         nonbasicLandCount: nonbasicCount,
-        totalManaSourcesIncludingLands:
-            finalTotal + newState.totalNonLandMana,
+        totalManaSourcesIncludingLands: finalTotal + newState.totalNonLandMana,
         warnings: warnings,
         tips: tips,
       ),
