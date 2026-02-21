@@ -120,7 +120,7 @@ class SwissPairingService {
         gameWins[p2] = (gameWins[p2] ?? 0) + pairing.player2Wins;
         gameLosses[p2] = (gameLosses[p2] ?? 0) + pairing.player1Wins;
 
-        if (pairing.isDraw) {
+        if (pairing.isDraw || pairing.player1Wins == pairing.player2Wins) {
           draws[p1] = (draws[p1] ?? 0) + 1;
           draws[p2] = (draws[p2] ?? 0) + 1;
         } else if (pairing.player1Wins > pairing.player2Wins) {

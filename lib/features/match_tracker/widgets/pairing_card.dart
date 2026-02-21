@@ -140,6 +140,16 @@ class PairingCard extends StatelessWidget {
                             true, true);
                       },
                     ),
+                    const SizedBox(width: 6),
+                    _ScoreButton(
+                      label: 'Done',
+                      color: Theme.of(context).colorScheme.primary,
+                      onTap: () {
+                        HapticFeedback.lightImpact();
+                        onReport!(pairing.player1Wins, pairing.player2Wins,
+                            false, true);
+                      },
+                    ),
                   ] else if (pairing.isComplete) ...[
                     Container(
                       padding: const EdgeInsets.symmetric(

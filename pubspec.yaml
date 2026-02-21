@@ -1,7 +1,7 @@
 name: limited_lands
 description: "MTG Limited Mana Base Calculator"
 publish_to: 'none'
-version: 0.3.2+15
+version: 0.3.3+16
 
 environment:
   sdk: '>=3.2.3 <4.0.0'
